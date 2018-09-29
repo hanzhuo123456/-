@@ -1,0 +1,36 @@
+<a href="javascript:history.go(-1)"></a> //跳回到上一个页面
+
+
+    <div id="nav">
+
+       <div class="text">
+           <a href=""></a>
+           <a href=""></a>
+           <a href=""></a>
+       </div>
+    </div>
+用ID控制的样式要比类控制的样式优先级要高，如下：
+   #nav a{
+      color:red;
+}
+而如果要接下来要用类名来改变a的颜色，则不能够。
+  .text a{
+        color:blue;//不能够改变  优先级比较低。
+      }
+
+那如果要改变颜色应该怎么办？
+   #nav .text a{
+
+        color:blue;
+
+      }
+
+优先级：ID>class>标签名
+》》》文字两端对齐
+.class{
+    text-align: justify;
+    text-justify: inter-ideograph; /*为了兼容IE*/
+    text-align-last: justify; /* ie9*/
+    -moz-text-align-last: justify; /*ff*/
+    padding-right:15px;
+}

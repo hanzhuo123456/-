@@ -1,0 +1,374 @@
+在建立数据库的时候，应该这样：create database db_name [default] character set utf8;
+这样数据哪怕是中文也能够正常显示了。（也可以在记录行进行设置编码）
+
+2.show warnings；显示警告信息。
+
+3.当你没有设置数据库的编码方式的时候，可以这样重新设置：
+  alter database db_name character set utf8;
+  如果数据显示是乱码时，可以将表删除后重新创建，此时就能够正常显示。
+
+4.unique 唯一约束，当给一个字段设置为unique时，表明该字段是唯一的。注意：unique约束的
+  字段可以为空值，只是当有多个记录的值是NULL时，MYSQL只保存一个null。
+  sql:provice_name varchar(20) not null unique
+
+5.cascade 级联操作 
+  on delete cascade 级联删除
+  foreign key(provice_name) references provice(provice_name) on update cascade);
+  定义外键的时候用
+  on update cascade 级联更新
+  on update cascade on delete cascade 级联更新级联删除
+
+附加：在已经创建好的表中添加外键
+sql: alter table 表名 add constraint 外键名称（任意起）foreign key (字段） references
+关系表名（关系表内字段）
+
+6.添加列
+   alter table city2 add population int unsigned not null default 0;
+  添加单列的时候有first ，after col_name几个修饰关键字，如果不指定，则新添加的字段默认
+  在最后，如果为first，则在最前，如果为after ‘某个字段的名字’，则新添加的字段会在你
+  指定的那个字段的后面。
+
+  添加多列
+  不能指定位置，全部是在最后
+    alter table city2 add population int unsigned not null, add area float(7,3);
+
+7.删除列
+   alter table city2 drop population;
+  删除多列
+   alter table city2 drop population,drop area;
+
+
+补充：更新多个字段
+
+update 表名 set  name=?,password=?.... where id=?
+
+
+8.查看一张表的详细信息：
+  show create table table_name;
+
+9.删除外键约束
+  alter table city2 drop FOREIGN key city2_ibfk_1;
+  其中city2_ibfk_1是通过第8条得到的外键的名字
+
+10.修改表的字段的顺序
+
+  10.1 alter table provice modify provice_name varchar(20) unique first;
+  其中如果想修改该字段的类型的话，在上面的类型出修改就行了，修改约束要用专门的方法。
+  在改变类型的时候要注意：大类型改为小类型的时候可能会造成数据的丢失
+
+  10.2 alter table provice change id provice_id int;注：int 类型不能丢，修改列名用
+  change，modify不能修改，同时change也可以修改类型，顺序等等。
+
+** 修改字段的名称
+
+	ALTER TABLE 表名 CHANGE 旧字段名 新字段名 新数据类型;
+
+
+11.修改数据表的名称
+  alter table table_name rename table_name2;
+  rename table table_name1 to table_name2;
+
+12.group by 分组
+
+   group by a,b：表示将a,b字段相同的分为一组
+   
+   where子句：在分组之前对记录过滤
+
+   having子句：在分组之后对分组记录进行过滤
+
+   sql：select cate_name,count from category where id>3 group by cate_name,count having count>2;
+
+   注意：select后面的字段（如上面的cate_name，count）必须作为分组的依据，即group by
+   后面必须有这些字段。
+
+13.insert 与 select的联合使用（将一个表的记录插入到另外一个表中）
+   insert into copy_category(cate_name) select cate_name from category where count>2;
+   
+   注意：没有values
+
+14.SQL函数
+   
+   14.1 round():四舍五入   round(...,2):对某个数进行四舍五入，并且只保留两位小数点
+   
+   14.2 avg()：求平均值
+
+   14.3 
+
+15.多表更新及表的参照关系
+   表一：
+mysql> select * from employee;
++----+--------+---------+
+| id | name   | manager |
++----+--------+---------+
+|  1 | 张三   | 李红    |
+|  2 | 张三   | 李红    |
+|  3 | 王五   | 刘倩    |
+|  4 | 马六   | 马芳    |
+|  5 | 孙杨   | 明德    |
+|  6 | 郭德纲 | 华北    |
++----+--------+---------+
+
+表二：
+表二的数据填充有所不同，如下：
+sql:insert into manager(name) select manager from employee group by manager;
+
+mysql> select * from manager;
++----+------+
+| id | name |
++----+------+
+|  1 | 刘倩 |
+|  2 | 华北 |
+|  3 | 明德 |
+|  4 | 李红 |
+|  5 | 马芳 |
++----+------+
+
+如何把两张表连接起来？并且将employee表里面的manager存储的数据变为manager表的id?
+
+sql: update employee as e inner join manager as m on e.manager=m.name set e.ma
+nager=m.id;
+   
+此时的表：mysql> select * from employee;
++----+--------+---------+
+| id | name   | manager |
++----+--------+---------+
+|  1 | 张三   | 4       |
+|  2 | 张三   | 4       |
+|  3 | 王五   | 1       |
+|  4 | 马六   | 5       |
+|  5 | 孙杨   | 3       |
+|  6 | 郭德纲 | 2       |
++----+--------+---------+
+mysql> desc employee;
++---------+-------------+------+-----+---------+----------------+
+| Field   | Type        | Null | Key | Default | Extra          |
++---------+-------------+------+-----+---------+----------------+
+| id      | smallint(6) | NO   | PRI | NULL    | auto_increment |
+| name    | varchar(20) | NO   |     | NULL    |                |
+| manager | varchar(20) | NO   |     | NULL    |                |
++---------+-------------+------+-----+---------+----------------+
+此时manager的数据类型还是varchar类型，同时manager这个名字也不合适。那么如何修改呢？
+
+sql: alter table employee change manager manager_id smallint not null;
+
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| id         | smallint(6) | NO   | PRI | NULL    | auto_increment |
+| name       | varchar(20) | NO   |     | NULL    |                |
+| manager_id | smallint(6) | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+
+同时应该键入外键，与父表联系起来。
+
+sql:alter table employee add constraint FK_ma_em foreign key (manager_id) ref
+erences manager(id) on update cascade on delete cascade;
+
+mysql> desc employee;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| id         | smallint(6) | NO   | PRI | NULL    | auto_increment |
+| name       | varchar(20) | NO   |     | NULL    |                |
+| manager_id | smallint(6) | NO   | MUL | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+上面的操作流程如下：创建manager-->插入数据-->更新employee-->插入外键；
+
+那么有没有方法将上面的步骤省略一两步呢？比如说在创建数据表的同时就将数据插入进去。
+
+sql： create table employee2
+    (
+	id smallint unsigned auto_increment primary key,
+	employee_name varchar(20) not null
+    ) 
+   select name from employee group by name;
+
+你是不是认为这样是正确的呢？让我们来看看现在建立的表的结构吧！
+
+mysql> select * from employee2;
++----+---------------+--------+
+| id | employee_name | name   |
++----+---------------+--------+
+|  1 |               | 孙杨   |
+|  2 |               | 张三   |
+|  3 |               | 王五   |
+|  4 |               | 郭德纲 |
+|  5 |               | 马六   |
++----+---------------+--------+
+
+那么正确的解决方案应该是：
+
+
+sql： create table employee2
+    (
+	id smallint unsigned auto_increment primary key,
+	name varchar(20) not null
+    ) 
+   select name from employee group by name;
+
+mysql> select * from employee2;
++----+--------+
+| id | name   |
++----+--------+
+|  1 | 孙杨   |
+|  2 | 张三   |
+|  3 | 王五   |
+|  4 | 郭德纲 |
+|  5 | 马六   |
++----+--------+
+注意：你创建新表的字段的名字要和查询到的想要插入的字段的名字应该保持一致。
+
+
+16.多表连接之内连接
+
+mysql> select * from manager;
++----+---------+
+| id | ma_name |
++----+---------+
+|  1 | 张剑锋  |
+|  2 | 王涛    |
++----+---------+
+2 rows in set (0.00 sec)
+
+mysql> select * from department;
++----+----------+------------+
+| id | de_name  | manager_id |
++----+----------+------------+
+|  2 | 财政部门 |          1 |
+|  3 | 技术部门 |          1 |
+|  4 | 管理部门 |          2 |
++----+----------+------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from employee;
++----+---------+---------------+
+| id | em_name | department_id |
++----+---------+---------------+
+|  2 | 李泽平  |             2 |
+|  3 | 123     |             2 |
++----+---------+---------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from manager as ma inner join department as de on ma.id=de.manag
+er_id inner join employee as em on de.id=department_id;
++----+---------+----+----------+------------+----+---------+---------------+
+| id | ma_name | id | de_name  | manager_id | id | em_name | department_id |
++----+---------+----+----------+------------+----+---------+---------------+
+|  1 | 张剑锋  |  2 | 财政部门 |          1 |  2 | 李泽平  |             2 |
+|  1 | 张剑锋  |  2 | 财政部门 |          1 |  3 | 123     |             2 |
++----+---------+----+----------+------------+----+---------+---------------+
+2 rows in set (0.02 sec)
+
+
+表之间的关系为：
+
+manager 1-------------->n department 1----------------->n employee
+
+三张表的连接可理解为这样：
+mysql> select * from manager as ma inner join department as de on ma.id=de.manag
+er_id;
++----+---------+----+----------+------------+
+| id | ma_name | id | de_name  | manager_id |
++----+---------+----+----------+------------+
+|  1 | 张剑锋  |  2 | 财政部门 |          1 |
+|  1 | 张剑锋  |  3 | 技术部门 |          1 |
+|  2 | 王涛    |  4 | 管理部门 |          2 |
++----+---------+----+----------+------------+
+先让manager和department两张表做内连接，结果如上
+
+然后再用这张表与employee做内连接。结果如下
+
+mysql> select * from manager as ma inner join department as de on ma.id=de.manag
+er_id inner join employee as em on de.id=department_id;
++----+---------+----+----------+------------+----+---------+---------------+
+| id | ma_name | id | de_name  | manager_id | id | em_name | department_id |
++----+---------+----+----------+------------+----+---------+---------------+
+|  1 | 张剑锋  |  2 | 财政部门 |          1 |  2 | 李泽平  |             2 |
+|  1 | 张剑锋  |  2 | 财政部门 |          1 |  3 | 123     |             2 |
++----+---------+----+----------+------------+----+---------+---------------+
+
+
+17.如何删除唯一约束？
+
+   首先，凡是有约束对的MYSQL都会建立起对应的索引，这样能够提高查找效率，而我们删除
+   唯一约束对应的索引就相当于删除了唯一约束。
+
+   first：
+  +---------+---------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------+
+| student | CREATE TABLE `student` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) NOT NULL,
+  `age` tinyint(3) unsigned NOT NULL,
+  `gender` enum('男','女') NOT NULL,
+  `stu_no` varchar(30) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `stu_no` (`stu_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8 |
++---------+---------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------+
+
+以上是远数据表，此刻我们想删除stu_no对应的唯一约束
+
+show index from student\G;
+
+输入以上命令，得到如下：
+*************************** 1. row ***************************
+        Table: student
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: id
+    Collation: A
+  Cardinality: 15
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 2. row ***************************
+        Table: student
+   Non_unique: 0
+     Key_name: stu_no
+ Seq_in_index: 1
+  Column_name: stu_no
+    Collation: A
+  Cardinality: 15
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+
+
+其中，主键对应一个索引，唯一约束对应一个索引，那么怎么删除唯一约束所对应的索引呢？
+
+ alter table student drop index stu_no;
+
+这样就能将唯一约束删除了。
+
+18.添加唯一约束（可以给多个字段添加唯一约束）
+
+   alter table student add unique(stu_no);
+
+导出数据库：
+	mysqldump -h localhost -u root -p computer_network >C:\sql\net.sql
+
+
+查询全体学生情况，查询结果按所在系的系号升序排列，同一系中的学生按年龄降序排列。
+        SELECT  *
+        FROM  Student
+        ORDER BY Sdept，Sage DESC；
+
+
+
+
+

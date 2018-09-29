@@ -1,0 +1,4 @@
+1.Cannot delete or update a parent row: a foreign key constraint 
+  该错误有可能是添加了多个外键约束，可以通过show create table table_name来查看详情，
+  如果存在多于的外键，那么使用alter table table_name drop foreign key ...(此处为
+  外键的名字）可由show create table table_name来得到

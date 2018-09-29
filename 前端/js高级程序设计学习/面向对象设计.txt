@@ -1,0 +1,37 @@
+
+1.Object.defineProperty() 
+
+
+	var person={
+         name:"韩卓",
+         age:20
+    	 }
+      	  Object.defineProperty(person,"name",{
+            writable:false, //定义值不能被修改,如果要修改该对象的值，必须通过value来修改
+            value:"韩卓大帅哥"
+      	  });
+       	 alert(person.name);
+       	 person.name="哈哈，我不能被修改";
+       	 alert(person.name);
+
+
+2.setter,getter
+
+   window.onload=function(){
+        var dom=document.getElementById("div");
+        var change={
+            _value:dom.title //其中下划线是必须的
+        };
+        alert(change._value);
+        Object.defineProperty(change,"value",{
+            get:function(){
+                return this._value; //其中下划线是必须的
+            },
+            set:function(newValue){  //给value赋值时会自动传入进来
+                this._value=newValue; 
+            }
+        });
+        change.value="aaa"; //此处不需要下划线
+        alert(change.value)
+
+    }

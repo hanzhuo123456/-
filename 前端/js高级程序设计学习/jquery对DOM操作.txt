@@ -1,0 +1,190 @@
+ 1. val()  对表单进行操作
+
+ 2. val（["value","value"]）  传一个数组，如果是radio或者checkbox的话，那么其value值与传
+                           进去的value值一样是，就会被勾选上，下拉菜单也可以用此方法
+                          选择首选项
+
+ 3. text()                    获取HTML的文本，设置时 text（“里面是文本内容”）
+
+
+
+ 4.  html()                    获取HTML（包括标签名和文本），设置，HTML（<span>sdk</span>）
+
+ 5.attr()                     attr("id")获取id属性值，attr("key","value"),
+                           attr({"key":"value","key","value"})
+                           attr("title",function(index){return "我是"+index+"title"}
+                           index:获取当前这个对象的索引值
+
+6.attr（"title",function(index,value){ ...}）  value是指原来的属性值，如title的原来值是
+                             “我是title”，此时value的值就是"我是title"
+
+
+ 7.$("#box").css("width")    获取css里面的width样式
+
+ 8.$("#box").css("width"，"200px")  设置行间样式，width为200px
+
+9.$("#box").css(["width", "height", "background-color"])  获取多个属性的值，返回的
+                  是一个对象数组，数据格式是（类似于JSON格式）：
+                 {width: "200px", height: "200px", background-color: "rgb(255, 0, 0)"}
+
+
+
+  10. var box= $("#box").css(["width", "height", "background-color"])
+
+           $.each(box, function (attr, value) {
+               alert(attr + ":" + value);
+
+           })
+
+遍历box对象数组（数组格式： {width: "200px", height: "200px", background-color: "rgb(255, 0, 0)"}
+）有两个参数，attr（属性值：width，height，background-color），value（对应属性值）
+
+
+
+11.   $("#box div").each(function (index, element) {
+                alert(index + "：" + element);
+
+            })
+       获取box  下的所有div，不管是孙子还是儿子都会被获取到，有两个参数，一个是div的索引值
+
+
+12.    $("div").css("width", function (index,value) {
+                alert(index);
+
+            })
+      获取所有的div的值，index表示的div的索引值，value表示的是width的值。
+
+
+13.   $("div").click(function(){
+
+            $(this).toggleClass(function(index,className,switchBool){
+                  alert(index+""+className+""+switchSBool)        //此时index永远为0，因为this指针，所以当前div只有一个。switchBool是频率，
+                                                                     代表点多少次切换        })
+
+     })
+
+
+
+14.         $(window).scroll(function () {
+                if ($(window).scrollTop() > 300) {
+                    $("#box").stop(). show("slow").css("position","fixed");
+                }
+                else
+                {
+                    $("#box").stop().hide("slow");
+                }
+            })
+        })
+          鼠标滚动事件,$(window).scroll,这是一个滚动监听事件，即每滚动一次就会获取到一个值。$(window).scrollTop()获取到滚动条距离页面最顶部的距离，这是一个不带px的number类型。
+
+
+
+15.      width（）获取盒子本身的宽度，不包括内边距等等
+
+
+
+
+16.      innerWidth()  获取盒子带有内边距的宽度。
+
+
+
+17.      outerWidth（）    获取盒子带有内边距和边框的宽度
+
+
+
+18.     outerWidth(true)  获取盒子带有内边距和边框还有margin值的宽度 
+
+
+
+19      warp()            在一个DOM节点的外部加入一个DOM节点
+                               $("div").wrap("<span></span>"); 在div的外层加一个span标签
+                               $("div").wrapInner("<p>sdfs</p>"); 在div的内部第一层加一个p标签
+   
+                           $("div").wrap(function (index) {
+                                     return "<strong/>"
+                              });   //wrapInner也可以这么写
+
+20      unwrap             $("div").wrap("<span>AAA</span>");
+                           $("div").unwrap();
+                           移出外部的span元素，但是其中的内容AAA不会消失
+                           $("div").wrap("<span><em></em></span>)
+                           $("div").unwrap();
+                           $("div").unwrap();     
+                           一次只能移出一层
+
+
+
+20     append（）         $("div").append("<em/>")在div里面加一个em标签，
+                          紧随在div原本内容的后面
+
+
+21     clone（）          $(".a").clone().appendTo(".b");
+                          将class=“a”的元素复制下来，加到class=“b”的元素里面去
+
+                          $(".a").append($(".b").clone(".b"));在class=“a”的元素加入
+                          class=“b”的元素
+           
+                          $(function () {
+                                 $(".a").click(function () {
+                                alert("aaa")
+                            })
+
+                            $(".b").append($(".a").clone(true))
+                           })
+                          当clone里面有参数true时，其实会将复制的DOM元素里面的事件
+                          全部复制下来。
+
+22      remove（）         $(function () {
+                             $(".a").remove();   //移出掉class=“a”的元素
+                             $("div").remove(".a"); //同上
+                            })
+
+
+                              $(function () {
+                                $(".a").click(function () {
+                                    alert('akd')
+                                 })
+                                $("div").remove(".a").appendTo("body");
+                              })
+
+                              当DOM元素有事件的时候，移出掉此DOM事件然后又恢复的时候，
+                              事件不会恢复
+
+23       detach()            当DOM元素有事件的时候，移出掉此DOM事件然后又恢复的时候，
+                              事件会恢复
+
+
+
+24       empty（）          <div class="a">我是一个div</div>
+                            $(function () {
+                                $(".a").empty();
+                            })
+                            内容会被清除掉，但是标签不会清除
+
+
+
+
+                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

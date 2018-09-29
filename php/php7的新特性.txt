@@ -1,0 +1,3 @@
+导入命名空间：use
+导入函数：use func-->Namespace\functionName;  functionName();
+导入常量：use constant Namespace\CONST_NAME; echo CONST_NAME;

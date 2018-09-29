@@ -1,0 +1,33 @@
+ var mDate=new Date();
+
+ alert( mDate.getFullYear()); //获取年份
+
+mDate.getMonth()+1            //默认是从0开始的，所以每次都要加一才能获取到正确的月份
+
+mDate.getDate()               //获取天数，正确的日期数
+
+mDate.getDay()+1             //获取天数，默认从0开始，所以每次都要加一才能获取到正
+                               确的日期份
+
+mDate.getHours()              //获取小时
+
+mDate.getSecond()               //获取秒数
+
+mDate.getMinutes();          //获取秒数
+
+trim()                       //去掉空格
+
+
+
+
+  var SysSecond;
+    var date1 = new Date();               //用未来的时间减去系统现在的时间，得到中间的
+                                             时间段
+    var time1 = date1.getTime();
+    var date2 = new Date("2017/12/11 9:00:00");
+    var time2 = date2.getTime();
+    time = time2 - time1
+    SysSecond = Math.floor(time / 1000);
+
+
+ 

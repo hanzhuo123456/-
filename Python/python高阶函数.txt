@@ -1,0 +1,275 @@
+>>>>>>>>map()
+def f(x)
+   return x+2
+
+print(map(f,[1,2,3,4]))
+
+输出[3,4,5,6](不改变原列表），生成一个新列表
+
+
+
+>>>>>>>>reduce(x,y,z)
+	def useReduce(x,y):
+		return x*y
+
+使用时：from functools import reduce
+	reduce(useReduce,[1,2,3],100)
+其中，100为计算的初始值，即第一个函数为useReduce(100,1)
+
+
+>>>>>>>>sorted()函数
+	student = [20,5,12,10]
+	sorted(student)
+
+
+输出[5,10,12,20]
+反序：sorted(student,key = None,reverse = False)
+使用lambda:
+	student = [('dave', 'B', 10), ('jane', 'B', 12), ('john', 'A', 15)]
+	sorted(student,lambda student:student[2])-->以元组第三个元素排序
+
+
+>>>>>>>>对于列表的赋值，有这种方法
+	 student = [1,2,3]
+	 a,b,c = student
+	 print(a)
+		1
+	 print(b)
+		2
+	 print(c)
+		3
+
+
+
+>>>>>>>>闭包
+# 希望一次返回3个函数，分别计算1x1,2x2,3x3:
+def count():
+    fs = []
+    for i in range(1, 4):
+        def f():
+             return i*i
+        fs.append(f)
+    return fs
+
+f1, f2, f3 = count()
+你可能认为调用f1()，f2()和f3()结果应该是1，4，9，但实际结果全部都是 9（请自己动手验证）。
+
+原因就是当count()函数返回了3个函数时，这3个函数所引用的变量 i 的值已经变成了3。由于f1、f2、f3并没有被调用，所以，此时他们并未计算 i*i，当 f1 被调用时：
+
+ f1()
+9     # 因为f1现在才计算i*i，但现在i的值已经变为3
+因此，返回函数不要引用任何循环变量，或者后续会发生变化的变量。
+
+
+>>>>>>>>装饰器
+
+def printdebug(func):
+    def __decorator():
+        print('enter the login')
+        func()
+        print('exit the login')
+    return __decorator 
+ 
+@printdebug  #实际上相当于是login = printdebug(login)
+def login():
+    print('in login')
+ 
+login()
+
+>>>>>>>>带有参数的装饰器
+def printdebug(func):
+    def __decorator(user):    #add parameter receive the user information
+        print('enter the login')
+        func(user)  #pass user to login
+        print('exit the login')
+    return __decorator 
+ 
+@printdebug 
+def login(user):
+    print('in login:' + user)
+ 
+login('jatsz')
+
+执行顺序如下：login = printdebug(login('jatsz'))--->__decorator('jatsz')--->func('jatsz')-->login('jatsz')
+
+
+>>>>>>>>拥有多个装饰器时
+def printdebug(func):
+    def __decorator():
+        print('enter the login')
+        func()
+        print('exit the login')
+
+    return __decorator
+
+
+def others(func):  # define a other decorator
+    def __decorator():
+        print('***other decorator***')
+        func()
+
+    return __decorator
+
+def thirdDecorator(func):
+    def __decorator():
+        print("thirdDecorator")
+    return __decorator
+
+@others         #       login = other(printdebug)
+@printdebug     #       printdebug = printdebug(thirdDecorator)
+@thirdDecorator #       thirdDecorator = thirdDecorator(login)
+def login():
+    print('in login:')
+
+
+@printdebug  # switch decorator order
+@others
+def logout():
+    print('in logout:')
+
+
+login()
+print('---------------------------')
+logout()
+
+
+
+>>>>>>>>有技巧的if,else函数
+msg = "success" if user == "jatsz" else "fail"
+等同于 if user == 'jatsz':
+		msg = 'success'
+	else:
+		msg = 'fail'
+
+
+
+
+>>>>>>>>当实例属性和类属性重名时，实例属性优先级高，它将屏蔽掉对类属性的访问。
+
+
+
+
+>>>>>>>>Python定义类方法
+和属性类似，方法也分实例方法和类方法。
+
+在class中定义的全部是实例方法，实例方法第一个参数 self 是实例本身。
+
+要在class中定义类方法，需要这么写：
+class Person(object):
+    count = 0
+    @classmethod
+    def how_many(cls):
+        return cls.count
+    def __init__(self, name):
+        self.name = name
+        Person.count = Person.count + 1
+
+print Person.how_many()
+p1 = Person('Bob')
+print Person.how_many()
+
+
+通过标记一个 @classmethod，该方法将绑定到 Person 类上，而非类的实例。类方法的第一个参数将传入类本身，通常将参数名命名为 cls，上面的 cls.count 实际上相当于 Person.count。
+
+因为是在类上调用，而非实例上调用，因此类方法无法获得任何实例变量，只能获得类的引用。
+
+
+
+
+>>>>>>>>isinstance判断变量的类型
+
+isinstance(p, Person)
+True    # p是Person类型
+
+isinstance(p, Student)
+False   # p不是Student类型
+
+isinstance(p, Teacher)
+False   # p不是Teacher类型
+
+
+
+
+>>>>>>>>type()判断变量的类型
+ type(123)
+<type 'int'>
+ s = Student('Bob', 'Male', 88)
+ type(s)
+<class '__main__.Student'>
+
+
+
+
+>>>>>>>>dir() 函数获取变量的所有属性：
+
+ dir(123)   # 整数也有很多属性...
+
+['__abs__', '__add__', '__and__', '__class__', '__cmp__', ...]
+
+
+ dir(s)
+
+['__class__', '__delattr__', '__dict__', '__doc__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'gender', 'name', 'score', 'whoAmI']
+
+
+
+
+>>>>>>>>getattr(),setattr()
+
+dir()返回的属性是字符串列表，如果已知一个属性名称，要获取或者设置对象的属性，就需要用 getattr() 和 setattr( )函数了：
+
+getattr(s, 'name')  # 获取name属性
+
+'Bob'
+
+ setattr(s, 'name', 'Adam')  # 设置新的name属性
+
+ s.name
+
+'Adam'
+
+getattr(s, 'age')  # 获取age属性，但是属性不存在，报错
+
+getattr(s, 'age', 20)  # 获取age属性，如果属性不存在，就返回默认值20
+
+
+
+
+
+
+>>>>>>>>json.load()方法
+
+Python提供了open()函数来打开一个磁盘文件，并返回 File 对象。File对象有一个read()方法可以读取文件内容：
+
+例如，从文件读取内容并解析为JSON结果：
+
+import json
+f = open('/path/to/file.json', 'r')
+print json.load(f)
+由于Python的动态特性，json.load()并不一定要从一个File对象读取内容。任何对象，只要有read()方法，就称为File-like Object，都可以传给json.load()。
+
+请尝试编写一个File-like Object，把一个字符串 r'["Tim", "Bob", "Alice"]'包装成 File-like Object 并由 json.load() 解析。
+
+?不会了怎么办
+只要为Students类加上 read()方法，就变成了一个File-like Object。
+
+参考代码:
+
+import json
+
+class Students(object):
+    def read(self):
+        return r'["Tim", "Bob", "Alice"]'
+
+s = Students()
+
+print json.load(s)
+
+
+
+
+
+
+
+
+

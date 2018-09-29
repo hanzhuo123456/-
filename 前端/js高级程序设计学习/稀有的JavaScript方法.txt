@@ -1,0 +1,13 @@
+text（）  			用于检测一个字符串是否匹配某个模式，
+				var str = "Visit W3School";
+				var patt1 = new RegExp("W3School");
+				var result = patt1.test(str);  result的值是true
+
+实时监听input框里面的值的变化
+				   $('#searchinput').bind('input propertychange', function () {
+     					   doSearch();
+    				   });
+
+刷新界面
+				  <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" 				  		href="javascript:location.replace(location.href);" title="刷新"><i
+          			      class="Hui-iconfont">&#xe68f;</i>

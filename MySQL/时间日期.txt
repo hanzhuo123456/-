@@ -1,0 +1,5 @@
+mysql获取当前时间戳：select unix_timestamp(now());
+
+获取当前日期：select curdate();
+
+获取当前时间：select curtime();

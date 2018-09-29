@@ -1,0 +1,24 @@
+1.encodeURI()会对http地址栏进行编码，但只有空格会被编码，想冒号，斜杠，井字不会被编码。
+
+2.3.encodeURIComponent（）会对所有符号进行编码
+
+var uri = "http://www.wrox.com/illegal value.htm#start";  
+//"http://www.wrox.com/illegal%20value.htm#start"
+ alert(encodeURI(uri));  
+//"http%3A%2F%2Fwww.wrox.com%2Fillegal%20value.htm%23start" 
+alert(encodeURIComponent(uri)); 
+
+
+3.decodeURI() 解码
+
+4.decodeURIComponent（）解码
+
+
+5.eval()  将字符串作为参数，字符串可以是一个js语句
+
+   var str="function ale(){alert('aaaa')}"
+        eval(str);
+        ale(); //aaaa
+
+6.var global = function(){  return this;  }();  //以上代码创建了一个立即调用的函数表达式，返回 this 的值
+

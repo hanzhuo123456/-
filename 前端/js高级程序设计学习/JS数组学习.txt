@@ -1,0 +1,31 @@
+数组的定义：
+        var aTeam=new Arry();
+        aTeam[0]="aaa";
+        aTeam[1]="bbb";
+        aTeam[2]="ccc";
+
+        var aTeam=new Arry(3);//数组里面只能有三个元素。
+        aTeam[0]="aaa";
+        aTeam[1]="bbb";
+        aTeam[2]="ccc";
+
+        var aTeam=["aaa","bbb","ccc"]
+
+数组的方法：
+     join():
+             alert(aTeam.join("///").toString());//默认输出的是aaa,bbb,ccc.此时输出
+
+             的是aaa///bbb///ccc
+ 
+     reverse() 将数组的顺序颠倒。
+             
+     
+     split方法  //可以将一个字符串转换成数组。
+         <script>
+             var aTeam="hh,zz,ni";
+             var bbb=aTeam.split(",");
+             alert(bbb.length)
+             alert(bbb[2]);
+        </script>
+             
+     
