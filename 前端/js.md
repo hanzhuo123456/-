@@ -1,6 +1,6 @@
-### 
+###  前端书籍推荐
 
-
+- [伯乐在线](https://github.com/jobbole/awesome-web-dev-books)
 
 ### Boolean()
 
@@ -1159,8 +1159,6 @@ alert(person2.constructor == Person); // true
 
 ```javascript
 alert(person1 instanceof Object) // true
-
-
 alert(person1 instanceof Person) // true
 alert(person2 instanceof Object) // true
 alert(person2 instanceof Person) // true
@@ -1242,26 +1240,605 @@ alert(person1.hasOwnProperty('name')) // true
 
 - `Object.keys()`
   - 取得所有可枚举的实例属性
+  - 接收一个对象作为参数
+  - 返回包含所有可枚举属性的字符串数组
+
+```javascript
+function Person(){
+    
+}
+Person.prototype.name = 'Nicholas';
+Person.prototype.age = 29;
+Person.prototype.job = 'Software Engineer';
+Person.prototype.sayName = function() {
+	alert(this.name)
+};
+
+var keys = Object.keys(Person.prototype);
+alert(keys); //'name, age,job,sayName'
+
+var p1 = new Person();
+p1.name = 'Rob';
+p1.age = 31;
+var p1keys = Object.keys(p1);
+alert(p1keys); //'name,age'
+```
+
+- `Object.getOwnPropertyNames()`
+  - 得到所有实例属性, 无论是否可枚举
+
+```javascript
+var keys = Object.getOwnPropertyNames(Person.prototype)
+alert(keys); //'constructor,name,age,job,sayName'
+```
+
+- 更简单的原型语法
+
+```javascript
+function Person() {
+    
+}
+Person.protorype = {
+    name:'Nicholas',
+    age: 29,
+    job: 'software engineer',
+    sayName: function(){
+        alert(this.name)
+    }
+}
+```
+
+ - 注意点:
+
+   - 此时的`constructor`不再指向`Person`, 而是指向`Object`构造函数
+   - 用字面量的方式相当于新创建了一个对象, 这个对象也会自动获得constructor属性
+   - `instanceof`还能返回正确结果
+
+   ```
+   var friend = new Person();
+   alert(friend instanceof Object) // true
+   alert(friend instanceof Person); // true
+   alert(friend.constructor == Person) // false
+   alert(friend.constructor == Object) // true
+   ```
+
+   - 如果`constructor`很重要, 可以特意设置为适当的值
+
+   ```
+   function Person() {
+       
+   }
+   Person.protorype = {
+   	constructor: Person /**/
+       name:'Nicholas',
+       age: 29,
+       job: 'software engineer',
+       sayName: function(){
+           alert(this.name)
+       }
+   }
+   ```
+
+   - 这样设置会导致`[[Enumerable]]`为`true`, 默认情况下是不可以枚举的,此时可用`Object.defineProperty()`
+
+   ```
+   Object.defineProperty(Person.prototype, 'constructor',{
+       enumerable: false,
+       value: Person
+   })
+   ```
+
+   - 原型模式的缺点
+     - 所有的实例共享同样的属性, 当属性的值固定时, 所有的实例共享相同的值, 不能自定义属性的值.
+
+##### 组合使用构造函数模式和原型模式
+
+- 构造函数模式用于定义实例属性
+- 原型模式用于定义方法和共享的属性
+
+```javascript
+function Person(name, age, job){
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    this.friends = ['shelby', 'Court']
+}
+
+Person.prototype = {
+    constructor: Person,
+    sayName: function() {
+        alert(this.name)
+    }
+}
+
+var Person1 = new Person("Nicholas", 29, "soft")
+var person2 = new Person('Greg', 27, 'doctor')
+
+person1.friends.push('van');
+alert(person1.friends); //'shelby, Count, Van'
+alert(person2.friends); //'shelby,Count'
+alert(person1.friends === person2.friends); // false
+alert(person1.sayName === person2.sayName); // true
+```
+
+##### 动态原型模式
+
+- 将所有信息都封装在了构造函数中
+- 尽在必要的情况下初始化原型
+- 保持了同时使用构造函数和原型的优点
+
+```javascript
+function Person(name, age, job){
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    if(typeof this.sayName != 'function'){
+        Person.prototype.sayName = function() {
+            alert(this.name);
+        }
+    }
+}
+
+var friend = new Person('Nicholas', 29, 'software engineer')
+friend.sayName();
+```
+
+- 以上代码中, 只在`sayName()`方法不存在的情况下, 才会将它添加到原型中
+- 只会在初次调用构造函数时才会执行, 此后, 原型已经完成初始化, 不需要修改.
+- 不必用`if`检查每个属性和方法, 只需检查其中一个即可.
 
 
 
+##### 寄生构造函数模式
+
+- 使用在前几种模式都不适用的情况下
+
+```javascript
+function Person(name, age, job){
+    var o = new Object();
+    o.name = name;
+    o.age = age;
+    o.job = job;
+    o.sayName = function() {
+		alert(this.name)
+    }
+    return o;
+}
+
+var friend = new Person('Nicholas', 29, 'soft')
+friend.sayName(); // 'Nicholas'
+```
+
+- 简要说明上述例子
+
+  - 除了使用`new`操作符并把使用的包装函数(`Person`)叫做构造函数之外, 和工厂模式一摸一样
+  - 构造函数在不返回值的情况下, 默认会返回新对象实例
+  - 添加`return`语句后, 可以重写调用构造函数时返回的值.
+
+  - 项创建一个具有额外方法的特殊数组时, 由于不能直接修改`Array`构造函数, 可以使用这个模式
+
+  ```javascript
+  function SpecialArray() {
+      /** 创建数组 **/
+      var values = new Array();
+      /** 添加值 **/
+      /** 使用apply将数组里面的元素一个个push进数组, 如果不使用apply,就会将整个对象push进数组 **/
+      values.push.apply(values, arguments);
+      
+      /**添加方法 **/
+      values.toPipedString = function() {
+          return this.join('|');
+      }
+      return values;
+  }
+  
+  var colors = new SpecialArray('red', 'blue', 'green');
+  alert(colors.toPipedString())  // 'red|blue|green'
+  ```
+
+
+##### 继承
+
+------
+
+- 给原型添加方法的代码要放在替换原型的语句之后
+
+```javascript
+function SuperType() {
+    this.property = true;
+}
+SuperType.prototype.getSuperValue = function(){
+    return this.property;
+}
+
+function SubType() {
+    this.subproperty = false;
+}
+
+//继承了SuberType
+SubType.prototype = new SuperType();
+
+//添加新方法
+SubType.prototype.getSubValue = function(){
+    return this.subproperty;
+}
+
+//重写超类型中的方法
+SubType.prototype.getSuperValue = function() {
+    return false;
+}
+
+var instance = new SubType();
+alert(instance.getSuperValue()); //false
+```
+
+- 实现继承时, 不能使用对象字面量创建原型方法, 这样做会重写原型链
+
+```javascript
+function SuperType() {
+    this.property = true;
+}
+SuperType.prototype.getSuperValue = function(){
+    return this.property;
+}
+
+function SubType() {
+    this.subproperty = false;
+}
+
+//继承了SuberType
+SubType.prototype = new SuperType();
+//使用字面量添加新方法, 会导致上一行代码无效
+SubType.prototype = {
+    getSubValue: function(){
+        return this.subproperty;
+    },
+    
+    someOtherMethod: function(){
+        return false;
+    }
+    
+}
+var instance = new SubType();
+alert(instance.getSuperValue()); //error
+```
+
+- 原型链的问题
+  - 共享属性的问题
+  - 当一个实例向原型中添加属性值时, 该属性值会在另外一个实例当中反映出来
+
+```javascript
+function SuperType(){
+	this.colors = ['red', 'blue', 'green'];
+}
+function SubType(){
+    
+}
+//继承了SuperType
+SubType.prototype = new SuperType();
+
+var instance1 = new SubType();
+instance1.colors.push('black');
+alert(instance1.colors); //'red,blue,green,black'
+
+var instance2 = new SubType();
+alert(instance2.colors); //'red, blue, green,black'
+```
+
+###### 借用构造函数(constructor stealing)
+
+- 伪造对象, 经典继承.
+- 使用`apply()`和`call()`
+
+```javascript
+function SuperType(){
+	this.colors = ['red', 'blue', 'green'];
+}
+function SubType(){
+    //继承了SuperType
+    SuperType.call(this)
+}
+
+var instance1 = new SubType();
+instance1.colors.push('black');
+alert(instance1.colors); //'red,blue,green,black'
+
+var instance2 = new SubType();
+alert(instance2.colors); //'red, blue, green'
+```
+
+- 以上代码注意点:
+  - 新创建的`subType`下调用了`SuperType`构造函数
+  - 在新`SubType`对象上执行`SuperType`函数中定义的所有度一项初始化代码
+  - `SubType`的每个实例都会具有自己的`colors`副本
+
+- 传递参数
+
+```
+function SuperType(name){
+	this.name = name;
+}
+function SubType(){
+    //继承了SuperType, 传递参数
+    SuperType.call(this, 'Nicholas')
+    
+    // 实例属性
+    this.age = 29;
+}
+
+var instance1 = new SubType();
+alert(instance.name) //'Nicholas'
+alert(instance.age) //29
+```
+
+###### 组合继承(伪经典继承)
+
+- 原型链和构造函数的技术组合到一块
+
+```javascript
+function SuperType(name) {
+    this.name = name;
+    this.colors = ['red', 'blue', 'green']
+}
+
+SuperType.prototype.sayName = function(){
+    alert(this.name)
+}
+
+function SubType(name, age){
+    SuperType.call(this, name);
+    
+    this.age = age;
+}
+
+SubType.prototype = new SuperType();
+SubType.prototype.sayAge = function(){
+    alert(this.age);
+}
+var instance1 = new SubType('Nicholas', 29);
+instance1.colors.push('black');
+alert(instance1.colors); // 'red, blue, green, black'
+instance1.sayName(); //'Nicholas'
+instance1.sayAge(); //29
+
+var instance2 = new SubType('Greg', 27);
+alert(instance2.colors); // 'red, blue, green'
+instance2.sayName(); //'Greg'
+instance2.sayAge(); //27
+```
+
+###### 原型式继承
+
+```javascript
+function object(o){
+    function F(){}
+    F.prototype = o;
+    return new F();
+}
+```
+
+- 先创建一个临时性的构造函数
+- 将传入的对象作为这个构造函数的原型
+- 返回临时类型的一个新实例
+
+```javascript
+var person = {
+    name: 'Nicholas',
+    friends: ['shelby', 'court', 'van']
+}
+
+var anotherPerson = object(person)
+anotherPerson.name = 'Greg';
+anotherPerson.friends.push('Rob');
+
+var yetAnotherPerson = object(person);
+yetAnotherPerson.name = 'Linda';
+yetAnotherPerson.friends.push('Barbie');
+alert(person.friends) //'shelby, Court, Van, Rob,Barbie'
+```
+
+- `Object.create()`规范化了原型式继承
+
+  - 在传入一个参数的情况下, `Object.create()`与`object()`方法的行为相同
+
+  ```javascript
+  var person = {
+      name: 'Nicholas',
+      friends: ['shelby', 'court', 'van']
+  }
+  
+  var anotherPerson = Object.create(person)
+  anotherPerson.name = 'Greg';
+  anotherPerson.friends.push('Rob');
+  
+  var yetAnotherPerson = Object.create(person);
+  yetAnotherPerson.name = 'Linda';
+  yetAnotherPerson.friends.push('Barbie');
+  alert(person.friends) //'shelby, Court, Van, Rob,Barbie'
+  ```
+
+  - 传入两个参数
+
+  ```javascript
+  var person = {
+      name: 'Nicholas',
+      friends: ['shelby', 'court', 'van']
+  }
+  
+  var anotherPerson = Object.create(person, {
+      name: {
+          value: 'Greg'
+      }
+  })
+  
+  alert(anotherPerson.name);  //'Greg'
+  ```
+
+  ###### 寄生式继承
+
+  ###### 寄生组合模式
+
+  - 详情见《JavaScript高级程序设计》192页
 
 
 
+### 函数表达式
 
+------
 
+#####  闭包
 
+- 闭包是指有权访问另一个函数作用域中的变量的函数
+- 创建闭包的常见方式, 就是在一个函数内部创建另一个函数
 
+```javascript
+function createComparisonFunction(propertyName){
+    return function(object1, object2){
+        value1 = object1[propertyName];
+        value2 = object2[propertyName];
+        if(value1 <value2){
+            return -1;
+        }else if(value1 > value2){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+```
 
+- 例子解析
+  - 匿名函数内部访问了外部变量`propertyName`
+  - 匿名函数被返回了, 在其他地方调用时, 仍可以访问外部变量.
+  - 之所以能访问, 是因为内部匿名函数的作用域链中包含`createComparisonFunction()`的作用域
+- 函数第一次调用会发生什么?
+  - 函数第一次被调用时, 会创建一个执行环境以及相应的作用域链
+  - 把作用域链赋值给一个特殊的内部属性(即`[[Scope]]`)
+  - 使用`this`, `arguments`和其他命名参数的值来初始化函数的活动对象
+  - 在作用域链中, 外部函数的活动对象始终处于第二位, 外部函数的外部函数的活动对象处于第三位,直至作为作用域链终点的全局执行环境
 
+- 闭包作用域链请看《JavaScript高级程序设计第三版》第197页
 
+##### 闭包与变量
 
+- 作用域链的副作用
+  - 闭包只能取得包含函数中任何变量的最后一个值
+  - 闭包所保存的是整个变量对象， 而不是某个特殊的变量
 
+```javascript
+function createFunctions() {
+    var result = new Array();
+    
+    for(var i = 0; i < 10; i++){
+        result[i] = function(){
+            return i;
+        };
+    }
+    return result;
+}
+```
 
+- 例子解析
 
+  - 会返回一个数组
+  - 似乎每个函数都应该返回自己的索引值
+  - 实际上, 每个函数都返回10
+  - 每个函数的作用域链中都保存着`createFunction()`函数的活动对象
+  - 它们引用的都是同一个变量i
+  - 当`createFunctions()`函数返回后, 变量i的值是10
+  - 此时每个函数都引用着保存变量i的同一个变量对象, 所以都是10
+  - 但是,可以通过创建另一个匿名函数强制让闭包的行为符合预期
 
+  ```javascript
+  function createFunctions() {
+      var result = new Array();
+      
+      for(var i = 0; i < 10; i++){
+          result[i] = function(num){
+          	return function(){
+                  return num;
+          	}
+             
+          }(i);
+      }
+      return result;
+  }
+  ```
 
+  - 经过测试, 上面的代码会产生一些小问题
 
+  ```javascript
+  createFunctions()  // [ƒ, ƒ, ƒ, ƒ, ƒ, ƒ, ƒ, ƒ, ƒ, ƒ]
+  
+  /** 想要得到正确的结果, 得像下面这样写 **/
+  
+  for(var i = 0; i < 10; i++){
+  	alert(createFunctions()[i]())
+  }
+  
+  /** 正确的写法如下  **/
+  function createFunctions() {
+      var result = new Array();
+      
+      for(var i = 0; i < 10; i++){
+          result[i] = function(num){
+                  return num;
+          }(i);
+      }
+      return result;
+  }
+  ```
+
+##### 关于this对象
+
+- [this指针详解(强烈推荐看一遍)](http://www.cnblogs.com/TomXu/archive/2012/01/17/2310479.html#!comments)
+
+- 在闭包中使用`this`对象也可能会导致问题
+
+- `this`对象时在运行时基于函数的执行环境绑定的
+
+  - 在全局函数中, `this`等于`window`
+  - 函数被某个对象调用时,`this`等于那个对象
+  - 不过, 匿名函数的执行环境具有全局性
+  - 因此, `this`通常指向`window`
+  - 但有时候编写闭包的方式不同, 这一点可能不会那么明显
+
+  ```
+  var name = 'the window';
+  
+  var object = {
+      name: 'my object',
+      getNameFunc: function() {
+          return function() {
+              return this.name;
+          }
+      }
+  }
+  alert(object.getNameFunc()())  // 'the window' (在非严格模式下)
+  ```
+
+- 例子解析
+
+  - 函数在调用时, 其活动对象都会自动取得两个特殊变量:`this`和`arguments`
+  - 内部函数在搜索这两个变量时, 只会搜索到活动对象为止
+  - 在上面的例子中`getNameFunc`被object调用, 其活动对象为object
+  - 而匿名函数被windows 调用, 所以其活动对象为`Windows`, 相当于`window.(object.getNameFunc())()`
+  - 可以将this对象保存在一个闭包能够访问到的变量里
+
+  ```
+  var name = 'the window';
+  
+  var object = {
+      name: 'my object',
+      getNameFunc: function() {
+      	var that  = this;
+          return function() {
+              return that.name;
+          }
+      }
+  }
+  alert(object.getNameFunc()())  // 'my object' (在非严格模式下)
+  ```
 
 
 
