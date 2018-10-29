@@ -1840,29 +1840,183 @@ function createFunctions() {
   alert(object.getNameFunc()())  // 'my object' (在非严格模式下)
   ```
 
+### BOM对象
+
+------
+
+##### window对象
+
+- 窗口位置
+  - `screenLeft`:窗口相对于屏幕左边的位置
+  - `screenTop`:窗口相对于屏幕上边的位置
+  - 火狐在`screenX`和`screenY`属性中提供相同的窗口位置,Safari和chrome也支持.在Opera中也支持这两个属性,但是与`screenLeft`和`screenTop`属性不对应, 建议不要在Opera中使用
+  - 跨浏览器获取窗口左边和上边的位置
+
+  ```javascript
+  var leftPos = (typeof window.screenLeft == "number") ? window.screenLeft : window.screenX;
+  
+  var topPos = (typeof window.screenTop == "number") ? window.screenTop : window.screenY;
+  
+  代码解析:
+  	在Firefox中,两个属性不存在,则取得screenX和screenY的值
+  ```
+
+![1540543601907](C:\Users\hanzhuo\AppData\Local\Temp\1540543601907.png)
+
+- `moveTo`
+
+  - 新位置的x和y值
+
+- `moveBy`
+
+  - 接收水平和垂直的像素值
+
+  ```
+  window.moveBy(-50, 0)
+  
+  这两个方法只在ie有效, 在其他浏览器都会被禁用
+  ```
+
+###### 窗口大小
+
+![1540544151878](C:\Users\hanzhuo\AppData\Local\Temp\1540544151878.png)
+
+```javascript
+var pageWidth = window.innerWidth,
+            pageHeight = window.innerHeight;
+
+        /** 兼容ie8及更早 **/
+        /** 如果pageWidth不存在 **/
+        if (typeof pageWidth != 'number') {
+            if (document.compatMode == "CSS1Compat") {
+                pageWidth = document.documentElement.clientWidth;
+                pageHeight = document.documentElement.clientHeight;
+            } else {
+                
+                pageWidth = document.body.clientWidth;
+                pageHeight = document.body.clientHeight;
+            }
+        }
+        console.log(pageWidth, pageHeight)
+```
+
+###### 导航和打开窗口
+
+- window.open()
+
+- 参数
+
+  - 要加载的url
+  - 窗口目标
+    - 该参数是已有框架或窗口的名称
+    - 会在有该名称的窗口或框架中加载中加载第一个参数指定的URL 
+    - 还可以是`_self` `_parent` `_top` `_blank`
+
+  ```
+  window.open("http://www.baidu.com", "topFrame")
+  ```
+
+  - 第三个参数是一个逗号分隔的设置字符串
+
+  ![1540545887761](C:\Users\hanzhuo\AppData\Local\Temp\1540545887761.png)
+
+```
+window.open("http://www.baidu.com", "wroxWindow", "height=400,width=400,top=10,left=10,resizable=yes")
+```
+
+![1540546121151](C:\Users\hanzhuo\AppData\Local\Temp\1540546121151.png)
 
 
 
+##### location对象
+
+- 既是`window`对象的属性, 也是`document`对象的属性
+- `window.location`和`document.location`引用的是同一个对象
+- location对象的属性
+
+![1540546299812](C:\Users\hanzhuo\AppData\Local\Temp\1540546299812.png)
+
+###### 查询字符串参数
+
+```javascript
+       function getQueryStringArgs() {
+           var qs = (location.search.length > 0 ? location.search.substring(1) : ""),
+           args = {},
+           items = qs.length ? qs.split("&") : [],
+           item = null,
+           name = null,
+           value = null,
+           i = 0,
+           len = items.length;
+
+           for(i = 0; i < len; i++){
+               item = items[i].split("=");
+               name = decodeURIComponent(item[0]);
+               value = decodeURIComponent(item[1]);
+
+               if(name.length) {
+                   args[name] = value;
+               }
+           }
+           return args;
+       }
+       getQueryStringArgs()
+```
+
+###### 位置操作
+
+- `location.assgin`
+
+  ```
+  location.assgin("http://www.baidu.com")
+  
+  会生成一条新历史纪录替换原有的历史记录
+  ```
+
+- `window.location`
+
+- `window.href`
+
+```
+window.location="http://www.baidu.com"
+window.href="http://www.baidu.com"
+
+也会调用assgin方法, 最常用的是设置href属性
+```
+
+- 修改`location`对象的其他属性也可以改变当前加载的页面
+
+![1540547827397](C:\Users\hanzhuo\AppData\Local\Temp\1540547827397.png)
+
+- `replace()`
+
+  - 通过上述图片修改url后,浏览器的后退按钮仍然可用
+  - 此方法是用来禁用浏览器的后退按钮的
+
+  ```javascript
+  setTimeout(function() {
+      location.replace("http://www.baidu.com")
+  }, 1000)
+  
+  -->一秒后将重定向到http://www.baidu.com, 后退按钮将处于禁用状态
+  ```
+
+- `reload()`
+
+  ```
+  location.reload();  //有可能从缓存中加载
+  location.reload(true); // 从服务器重新加载
+  ```
 
 
 
+##### navigator对象
 
+##### 检测插件
 
+### DOM
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+------
 
 
 
