@@ -412,7 +412,6 @@ colors[colors.length = 'brown'
 - 位置方法
 
   - `indexOf()`
-
     - 接收两个参数
 
     - 要查找的项和表示查找起点位置的索引
@@ -455,7 +454,7 @@ colors[colors.length = 'brown'
   ```
 
   - `map()`
-    - 返回妹子函数调用的结果组成的数组
+    - 返回每次函数调用的结果组成的数组
 
   ```
   var mapResult = numbers.map(function(item, index, array){
@@ -465,7 +464,6 @@ colors[colors.length = 'brown'
   ```
 
   - `forEach()`
-
     - 循环
 
   - `reduce()`
@@ -2018,13 +2016,208 @@ window.href="http://www.baidu.com"
 
 ------
 
+##### DOM属性
 
+- `getAttribute()`
+  - 不属于`document`对象, 只能通过元素节点对象调用
+- `setAttribute()`
 
+```
+object.getAttribute()
+```
 
+- `childNodes`属性
+  - 返回一个数组
 
+```javascript
+element.childNodes
+element.childNodes.length
+```
 
+```html
+    <div id="container">
+        <p>hanzhuo</p>
+        <ul>
+            <li class="choose a">1</li>
+            <li class="choose">2</li>
+            <li>3</li>
+        </ul>
+    </div>
+    <script>
+        var childNodes = document.getElementById("container").childNodes
+        console.log(childNodes)  //[text, p, text, ul, text]
+    </script>
+注意:
+	每次换行就相当于一个子节点text
+	获取的只是第一层的子节点
+```
 
+- `nodeType`属性
 
+  - 元素节点为1
+  - 属性节点为2
+  - 文本节点为3
+
+  ```javascript
+      <div id="container">
+          <p>hanzhuo</p>
+          <ul class="hanzhuo">
+              <li class="choose a">1</li>
+              <li class="choose">2</li>
+              <li>3</li>
+          </ul>
+      </div>
+      <script>
+          var childNodes = document.getElementById("container").childNodes
+          childNodes = Array.from(childNodes)
+          var results = childNodes.filter((item) => {
+               /* 获取到所有的元素节点 */
+              return item.nodeType === 1
+          })
+          console.log(results)
+      </script>
+  ```
+
+- `nodeValue`
+
+  - 可以得到和改变文本节点的值
+
+```javascript
+    <div id="container">
+        <p>
+            hanzhuo
+        </p>
+        <ul class="hanzhuo">
+            <li class="choose a">1</li><!DOCTYPE html>
+            <li class="choose">2</li>
+            <li>3</li>
+        </ul>
+    </div>
+    <script>
+        var childNodes = document.getElementById("container").childNodes
+        childNodes = Array.from(childNodes)
+        var results = childNodes.filter((item) => {
+             /* 获取到所有的元素节点 */
+            return item.nodeType === 1
+        })
+        /* results[0]为p标签, 不能直接获取p标签的nodeValue,此时将为null,p标签里面的文本其实是它的一个子节点里面的nodeValue的值 */
+        results[0].childNodes[0].nodeValue = "哈哈"
+    </script>
+```
+
+- `firstChild` 和`lastChild`属性
+  - 访问子节点的第一个元素和最后一个元素
+
+```
+node.firstChild   =====    node.childNodes[0]
+```
+
+- `addLoadEvent()`
+  - 页面加载完成之后执行多个函数
+  - 好扩展
+
+```javascript
+addLoadEvent(func){
+   var oldOnload = window.onload
+    if(typeof window.onload !== "function") window.onload = func
+    else{
+        window.onload = function() {
+            oldOnload()
+            func()
+        }
+    }
+}
+addLoadEvent(first)
+addLoadEvent(second)
+```
+
+- `parentNode`属性
+  - 父节点
+- `previousSibiling`  和 `nextSibling`
+  - 包括文本节点
+- `previousElementSibling`和 `nextElementSibling`
+  - 只包括元素节点
+
+![1540866875072](C:\Users\hanzhuo\AppData\Local\Temp\1540866875072.png)
+
+- `hasChildNodes()`
+  - 在包含一个或多个节点的时候返回`true`
+
+- `appendChild()`
+
+  - 向`childNodes`列表末尾添加一个节点
+
+  - 返回新增的节点
+  - 如果传入的节点已经是文档的一部分了, 会转移到新位置
+
+  ```javascript
+  var returnNewNode = someNode.appendChild(newNode)
+  returnNewNode === newNode //true
+  someNode.lastChild === returnNewNode //true
+  ```
+
+- `insertBefore()`
+
+  - 两个参数:要插入的节点和作为参照的节点
+  - 如果参照节点为空, 则插入末尾
+
+- `replaceChild()`
+
+  - 两个参数:要插入的节点和要替换的节点
+  - 替换节点将由这个方法返回并从文档树中被移除, 同时由要插入的节点占据其位置
+
+  ```
+  // 替换第一个子节点
+  var returnNode = someNode.replaceChild(newNode, someNode.firstChild)
+  
+  注意:
+  	从技术上来讲, 被替换的节点仍然还在文档中, 但它在文档中已经没有了自己的位置
+  ```
+
+- `removeChild()`
+
+  - 一个参数: 要移除的节点
+  - 被移除的节点将成为方法的返回值
+  - 仍然为文档所有, 只不过在文档中已经没有了自己的位置
+
+- `cloneNode()`
+
+  - 创建一个相同的副本
+  - 参数为`true`, 深复制, 也就是复制节点和整个子节点树
+  - 参数为`false`, 浅复制, 复制节点本身
+  - 复制后返回的节点并没有被指定父节点, 需要重新添加到文档中
+
+#####  document类型
+
+- `document.documentElement`
+  - 始终指向<HTML>元素
+- `document.body`
+  - 指向`body`元素
+  - 所有浏览器都支持以上两种属性
+
+- `document.title`
+
+  ```
+  取得标题
+  var originalTitle = document.title;
+  
+  设置标题
+  document.title = "haha"
+  ```
+
+- `document.forms`
+
+  - 包含文档中所有的<form>元素
+
+- `document.images`
+
+  - 获取所有的<img>元素
+
+- `document.links`
+
+  - 获取所有单`href`属性的<a>元素
+
+- 
 
 
 
