@@ -1,4 +1,4 @@
-###  前端书籍推荐
+前端书籍推荐
 
 - [伯乐在线](https://github.com/jobbole/awesome-web-dev-books)
 
@@ -2141,6 +2141,7 @@ addLoadEvent(second)
 ![1540866875072](C:\Users\hanzhuo\AppData\Local\Temp\1540866875072.png)
 
 - `hasChildNodes()`
+
   - 在包含一个或多个节点的时候返回`true`
 
 - `appendChild()`
@@ -2190,6 +2191,7 @@ addLoadEvent(second)
 #####  document类型
 
 - `document.documentElement`
+
   - 始终指向<HTML>元素
 - `document.body`
   - 指向`body`元素
@@ -2217,20 +2219,224 @@ addLoadEvent(second)
 
   - 获取所有单`href`属性的<a>元素
 
-- 
+
+##### Element类型
+
+- `attributes`
+
+  - 保存一个元素的所有属性(包括自定义属性)
+  - `getNamedItem(name)`: 通过name获取属性
+  - `removeNamedItem(name)`
+  - `setNamedItem(name)`
+  - `item(pos)`: 返回位于数字pos位置处的节点
+
+  ```
+  aSec[0].attributes.getNamedItem('my-color') //my-color="red"
+  
+  
+  ```
+
+  - `attributes`里面的每个节点的`nodeValue`就是属性的值
+
+  ```javascript
+  var  id = element.attributes.getNamedItem('id').nodeValue
+  var  id = element.attributes['id'].nodeValue
+  ```
+
+  - 也可以设置新值
+
+  ```
+  element.attributes['id'].nodeValue = 'someOtherId';
+  ```
 
 
 
+##### Text类型
+
+- `nodeType`为3
+
+- `nodeName`为`#text`(不是大写的text)
+
+- `nodeValue`为包含的文本
+
+- `parentNode`是一个`Element`
+
+- 没有子节点
+
+- 下列方法可以操作节点中的文本
+
+  - `appendData(text)`: 将text添加到节点的末尾
+  - `deleteData(offset, count)`: 在offset指定位置开始删除count个字符
+  - `insertData(offset, text)`: 在offset处插入text
+  - `replaceData(offset, count, text)`: 用text替换从offset指定位置到offset+count为止处的文本
+  - `splitText(offset)`: 从offset处将当前文本节点分成两个文本节点
+  - `substringData(offset, count)`: 提取从offset指定的位置到offset+count为止处的字符串
+  - 文本节点还有一个`length`属性(nodeValue.length == data.length)
+
+- 创建文本节点
+
+  - `createTextNode`
+
+  ```
+  var textNode = document.createTextNode('hello world')
+  element.appendChild(textNode)
+  ```
+
+- 规范化文本节点
+
+  - DOM中存在相邻文本节点容易导致混乱,分不清哪个文本节点表示哪个字符串, 于是催生了合并相邻文本节点的方法
+  - `normalize()`
+    - 在父元素上调用时, 两个或多个文本节点会合并成一个节点, 结果节点的nodeValue等于其他文本节点的拼接值
+
+  ```
+  element.normalize()
+  ```
+
+##### DocumentFragment类型
+
+- 轻量级文档
+- 可以包含和控制节点
+- 不会占用额外的资源
+- 特征
+  - `nodeType`: 11
+  - `nodeName`: `#document-fragment`
+  - `nodeValue`: null
+  - `parentNode`: null
+- 虽然不能讲文档片段直接添加到文档中, 但是可以作为一个仓库, 在里面保存将来可能会添加到文档中的节点
+
+```
+var fragment = document.createDocuemntFragment()
+
+```
+
+- 继承了`Node`的所有方法
+- 如果将文档中的节点添加到文档片段中, 就会从文档树当中移除该节点
+- 可以通过`appendChild`或`insetBefore`将文档片段中内容添加到文档中, 实际上只会将文档片段中的所有子节点添加到相应的位置上
 
 
 
+### DOM扩展
+
+------
+
+##### 选择符API
+
+- `querySelector()`
+
+  - 返回与该模式匹配的第一个元素
+  - 没有找到, 返回null
+  - 只返回一个元素
+
+  ```
+  /** 取得body元素 **/
+  var body = document.querySelector('body')
+  
+  var myDiv = document.querySelector('#myDiv')
+  
+  /** 取得类为selected的第一个元素
+  var selected = document.querySelector('.selected')
+  ```
+
+- `querySelectorAll()`
+
+  - 返回`NodeList`的实例
 
 
 
+- `matchesSelector()`
+
+  - 为Element类型新增方法
+  - 接收css选择符参数
+  - 如果调用元素与该选择符匹配, 返回`true`, 否则返回`false`
+
+  ```javascript
+  if(document.body.matchesSelector('body.page1')){
+      // true
+  }
+  ```
+
+  - 有兼容性, 包装方法
+
+  ![1541658682755](C:\Users\hanzhuo\AppData\Local\Temp\1541658682755.png)
+
+##### 元素遍历
+
+- 对于元素减的空格, ie9之前不会返回文本节点, 其他浏览器会,这样,就导致了在使用`childNodes`和`firstChild`等属性的行为不一致, 所以定义了一组属性
+
+- 为DOM元素添加的属性
+  - `childElementCount`: 返回子元素(不包括文本节点和注释)的个数
+  - `firstElementChild`: 指向第一个子元素
+  - `lastElementChild`:指向第二个子元素
+  - `previousElementSibling`: 指向前一个同辈元素
+  - `nextElementSibling`:指向后一个同辈元素
+
+- 遍历代码
+
+```javascript
+var i,
+	len,
+	child = element.firstElementChild;
+while(child != element.lastElementChild){
+    processChild()
+    child = child.nextElementSibling
+}
+```
 
 
 
+##### HTML5
 
+------
+
+###### 与类相关的扩充
+
+- `classList`属性
+  - `DOMTokenList`的实例
+  - `add(value)`: 添加到列表, 存在不添加
+  - `contains(value)`: 是否存在给定的值, 返回`true` or `false`
+  - `remove(value)`: 删除
+  - `toggle(value)`: 存在则删除, 不存在则添加
+
+###### 焦点管理
+
+- `document.activeElement`
+
+  - 是一个属性
+  - 引用DOM中获得了焦点的元素
+
+  ```javascript
+  var button = document.getElementById('myButton')
+  button.focus();
+  alert(document.activeElement === button); //true
+  ```
+
+  - 默认情况下, 刚刚加载时保存的是body元素的引用, 文档加载期间为`null`
+
+- `hasFocus()`
+
+  - 是方法
+  - 确定文档是否获得了焦点
+
+  ```javascript
+  var button = document.getElmentById('myButton')
+  button.focus()
+  alert(document.hasFocus) // true
+  ```
+
+
+
+###### HTMLDocument的变化
+
+- `readyState`属性
+
+  - `loading`:正在加载文档
+  - `complete`: 已经加载完文档
+
+  ```
+  if(document.readyState === "compelete"){
+      //
+  }
+  ```
 
 
 
