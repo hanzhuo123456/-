@@ -2438,6 +2438,379 @@ while(child != element.lastElementChild){
   }
   ```
 
+- 兼容模式
+
+  - `compatMode`属性
+    - 标准模式下: 为`CSS1Compat`
+    - 混杂模式: `BackCompat`
+
+  ```
+  if (document.compatMode == "CSS1Compat"){
+      alert('a')
+   
+  }else{
+      
+  }
+  ```
+
+- `document.head`属性
+
+  ###### 自定义数据属性
+
+  - 可以为元素添加非标准的属性, 但要加前缀`data-`, 目的是为元素提供与渲染无关的信息
+
+  - 自定义属性可以通过`dataset`来访问
+
+  ```js
+  <div id='myDiv' data-appId='12345' data-myname='hanzhuo'></div>
+  
+  var div = document.getElementById('myDiv')
+  
+  var appId = div.dataset.appId;
+  
+  div.dataset.appId = 23456
+  
+  if(div.dataset.myname){
+      console.log('')
+  }
+  ```
+
+
+
+###### 插入标记
+
+- `innerHTML`
+- `outerHTML`
+  - 包含自身元素以及子元素
+
+##### 专有扩展
+
+###### 文档模式
+
+- 《JS高程》317页
+
+###### children属性
+
+###### contains方法
+
+- 判断某个节点是不是另一个节点的后代
+- 返回`true` 或者`false`
+
+### DOM2和DOM3
+
+##### 元素大小
+
+![1542183568145](C:\Users\hanzhuo\AppData\Local\Temp\1542183568145.png)
+
+- 要知道某个元素在页面上的偏移量, 将这个元素的`offsetLeft`和`offsetTop`与其`offsetParent`的相同属性相加, 循环直至根元素, 就可以得到一个基本准确的值
+
+```javascript
+function getElementLeft(element){
+    var actualLeft = element.offsetLeft;
+    var current = element.offsetParent;
+    
+    while(current !== null){
+        actualLeft += current.offsetLeft;
+        current = current.offsetParen;
+    }
+    return actualLeft;
+}
+```
+
+##### 客户区大小
+
+![1542184166660](C:\Users\hanzhuo\AppData\Local\Temp\1542184166660.png)
+
+- 元素内容及其内边距所占据的空间大小
+- `clientWidth`是元素内容区宽度加上左右内边距宽度
+- `clientHeight` 是元素内容区高度加上上下内边距高度
+- 要确定浏览器视口大小
+  - 使用`document.documentElement`的这两个属性
+  - 使用`document.body`的这两个属性
+- 与偏移量相似, 客户区大小也是只读的, 每次访问都要重新计算
+
+##### 滚动大小
+
+- `scrollHeight`: 元素内容的总高度（包括滚动条隐藏部分）
+- `scrollWidth`: 元素内容的宽度（包括滚动条隐藏部分）
+- `scrollLeft`: 被隐藏在内容区域左侧的像素数, 通过这个属性可以改变元素的滚动位置
+- `scrollTop`: 被隐藏在内容区域上方的像素数, 通过这个属性可以改变元素的滚动位置
+-  带有垂直滚动条的总高度就是`document.documentElement.scrollHeight`
+- 不同浏览器的差别看《JS高程342页》
+
+##### 确定元素大小
+
+- `getBoundingClientRect()`
+  - 返回一个对象, 给出了元素在页面中相对于视口的位置
+    - IE8认为文档的左上角坐标是(2,2)
+    - 其他为(0,0)
+
+### 事件
+
+------
+
+#####  事件处理程序
+
+###### DOM2级事件处理程序
+
+- `addEventListener()`
+
+- `removeEventListener()`
+
+  - 所有节点都包含这两个方法
+
+  - 接收3个参数
+
+    - 要处理的事件名
+    - 作为事件处理程序的函数
+    - 布尔值, true: 在捕获阶段调用事件处理程序; false: 在冒泡阶段调用事件处理程序
+
+    ```javascript
+        let div = document.getElementById('mydiv')
+        div.addEventListener('click', function () {
+            alert(this.innerText)
+        }, true)
+    ```
+
+  - 通过`addEventListener()`添加的事件处理程序只能使用`removeEventListener()`来移除
+
+  - 通过`addEventListener()`添加的匿名函数将无法移除
+
+  ```
+      div.removeEventListener('click', function () {
+          alert(this.innerText)
+      }, true)
+      // 无效, 无法移除匿名函数
+  
+  修改: 
+  
+  var handler = function () {
+          alert(this.innerText)
+      }
+          div.addEventListener('click', handler, true)
+      div.removeEventListener('click', handler, true)
+      
+      // 有效
+  ```
+
+  - 大多情况下都是讲事件处理程序添加到冒泡阶段, 可以最大限度兼容各种浏览器
+
+
+
+###### IE事件处理程序
+
+- `attachEvent()` 和 `detachEvent()`
+
+  - 两个参数
+    - 事件处理程序名称和事件处理函数
+    - IE8及更早只支持冒泡
+
+  ```
+      let div = document.getElementById('mydiv')
+      div.attachEvent('onclick', function () {
+          alert(this === window) true
+      })
+  ```
+
+  - 第一个参数为`onclick`而不是`click`
+  - 事件处理程序会在全局作用域中运行. `this === window`
+
+###### 跨浏览器的事件处理程序
+
+```javascript
+var EventUtil = {
+    addHandler: function (element, type, handler){
+        if(element.addEventListener){
+            element.addEventListener(type, handler, false)
+        }else if(element.attachEvent){
+            element.attachEvent("on" + type, handler)else{
+                element["on" + type] = handler
+            }
+        }
+    },
+        removeHandler: function (element, type, handler){
+        if(element.removeEventListener){
+            element.removeEventListener(type, handler, false)
+        }else if(element.detachEvent){
+            element.detachEvent("on" + type, handler)else{
+                element["on" + type] = null
+            }
+        }
+    }
+}
+
+EventUtil.addHandler(btn, 'click', handler)
+EventUtil.removeHandler(btn, 'click', handler)
+```
+
+##### 事件对象
+
+- 触发DOM上的某个事件时, 会产生事件对象`event`
+
+```
+var btn = document.getElementById('myBtn')
+btn.onclick = function(event){
+    alert(event.type) // 'click'
+}
+btn.addEventListener('click', function(event){
+    alert(event.type) // 'click'
+}, false)
+```
+
+
+
+![1542265657019](C:\Users\hanzhuo\AppData\Local\Temp\1542265657019.png)
+
+![1542265663567](C:\Users\hanzhuo\AppData\Local\Temp\1542265663567.png)
+
+- `currentTarget`: 指向绑定事件的DOM
+- `target`: 指向实际触发的元素
+
+```javascript
+<div id="mydiv">
+    <span>
+        哈哈吧
+    </span>
+</div>
+
+    let div = document.getElementById('mydiv')
+    div.addEventListener('click', function (e) {
+        console.log(e.currentTarget)  // 指向mydiv
+        console.log(e.target) // 指向span
+    }, false)
+
+
+```
+
+###### IE中的事件对象
+
+- event作为window对象的一个属性存在
+
+```javascript
+var btn = document.getElmentById('myBtn')
+btn.onclick = function(){
+    var event = window.event;
+    alert(event.type)  // 'click'
+}
+```
+
+- 如果事件处理程序是使用`attachEvent()`添加的, 那么就会有一个event对象作为参数
+
+```javascript
+var btn = document.getElmentById('myBtn')
+btn.attachEvent('onclick',function(event){
+    alert(event.type)  // 'click'
+})
+```
+
+- ie的event对象也包含相关的实行和方法
+
+![1542268261648](C:\Users\hanzhuo\AppData\Local\Temp\1542268261648.png)
+
+- this不会始终等于事件目标, 所有还是使用`event.srcElement`比较保险
+
+  ```
+  var btn = document.getElementById('myBtn')
+  btm.onclick = function(){
+      alert(window.event.srcElement === this) // true
+  }
+  btn.attachEvent('onclick',function(event){
+        alert(event.srcElement === this) // false
+  })
+  ```
+
+###### 跨浏览器的事件对象
+
+```javascript
+var EventUtil = {
+    addHandler:function(element, type, handler){
+        // 省略的代码
+    },
+    getEvent: function(event){
+        return event ? event : window.event;
+    },
+    getTarget: function(event){
+        return event.target || event.srcElement
+    },
+    preventDefault: function(event){
+        if(event.preventDefault){
+            event.preventDefault()
+        }else{
+            event returnValue = false
+        }
+    },
+    removeHandler: function(element, type, handler){
+        
+    },
+    stopPropagation: function(event){
+        if(event.stopPropagation){
+            event.stopPropagation()
+        }else{
+            event.cancelBubble = true;
+        }
+    }
+}
+```
+
+##### 事件类型
+
+------
+
+###### UI事件
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
