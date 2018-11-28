@@ -1,6 +1,7 @@
 前端书籍推荐
 
 - [伯乐在线](https://github.com/jobbole/awesome-web-dev-books)
+- [three.js中文文档](http://techbrood.com/threejs/docs/)
 
 ### Boolean()
 
@@ -2736,7 +2737,7 @@ var EventUtil = {
         if(event.preventDefault){
             event.preventDefault()
         }else{
-            event returnValue = false
+            event.returnValue = false
         }
     },
     removeHandler: function(element, type, handler){
@@ -2758,23 +2759,358 @@ var EventUtil = {
 
 ###### UI事件
 
+- `load`
+  - 页面完全加载后在window上面触发
+  - 所有框架都加载完成在框架集上触发
+  - 图像加载完毕时在<img>上触发
+  - 嵌入的内容加载完毕时在<object>上面触发
+- `unload`
+  - 从一个页面切换到另一个页面
+  - 大多用于清除引用, 避免内存泄漏
+- `error` 
+  - 当发生`JavaScript`错误是在window上触发
+  - 无法加载图像时在<img>上触发
+  - 无法嵌入内容时在<object>上触发
+  - 一个或多个框架无法加载时在框架集上面触发
+- `resize`
+  - 当窗口或框架的大小变化时在`window`上触发
+- `scroll`
+  - 滚动带滚动条的内容时, 触发
+
+###### 焦点事件
+
+- `focus`
+  - 元素获得焦点时触发, 不会冒泡, 所有浏览器支持
+- `blur`
+  - 失去焦点触发, 不冒泡
+
+###### 鼠标与滚轮事件
+
+- `clientX` `clientY`
+
+  - 鼠标事件在特定位置发生, 而这两个属性保存位置信息
+  - 表示事件发生时鼠标指针在视口中的水平和垂直坐标
+
+  ```
+  var div = document.getElementById('myDiv')
+  EventUtil.addHandler('click', function(event){
+      event = EventUtil.getEvent(event)
+      alert(event.clientX, event.clientY)
+  },false)
+  ```
+
+- `pageX` `pageY`
+
+  - 在页面没有滚动的情况下, 其值与`clientX` `clientY`相等
+  - 计算鼠标的水平位置和垂直位置, 包括滚动的距离
+
+- `screenX` `screenY`
+
+  - 相对于整个电脑屏幕的位置
+
+![1542611352731](C:\Users\hanzhuo\AppData\Local\Temp\1542611352731.png)
+
+ 	
+
+- 修改键
+  - `shiftKey` `ctrlKey` `altKey` `metaKey`属性
+    - 如果相应的键被按下, 值为`true`
+    - 通过这几个属性可以确定用户是否同时按下其中的键
+
+- 鼠标滚轮事件
+
+  - `mousewheel`
+    - 在任何元素上面触发
+    - 冒泡到document或window
+    - event对象包含一个`wheelDelta`属性, 向前对东鼠标滚轮, `wheelDelta`是120的倍数, 向后是-120的倍数
+
+  ```
+  EventUtil.addHandler(document, 'mousewheel', function(event){
+      event = EventUtil.getEvent(event)
+      alert(event.wheelDelta)
+  })
+  ```
+
+###### 键盘与文本事件
+
+![1543197368787](C:\Users\hanzhuo\AppData\Local\Temp\1543197368787.png)
+
+- 在不支持的浏览器中` charCode`返回`undefined`
+
+###### HTML5事件
+
+- ` contextmenu`事件
+  - `Windows`中, 右键单击; `Mac`中, `Ctrl+单击`
+  - 是冒泡的
+  - 使用`event.preventDefault()`阻止容忍事件
+  - `ie`中将`event.returnValue`的值设置为`false`
+  - 属于鼠标事件, 事件对象中包含与光标位置有关的所有属性
+
+```js
+
+  <style>
+    #app{
+      width:100px;
+      height: 100px;
+      visibility: hidden;
+      border:1px solid #000000;
+      position: absolute;
+    }
+  </style>
+<div id="app">
+  <ul>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+  </ul>
+</div>
+<script>
+  let app = document.getElementById('app')
+  window.addEventListener('contextmenu', function(e){
+    e = window.event || e;
+    if(event.preventDefault){
+      event.preventDefault();
+    }else{
+      event.returnValue = false;
+    }
+    app.style.visibility = 'visible'
+    app.style.left = event.clientX + 'px';
+    app.style.top = event.clientY + 'px';
+  }, false)
+  window.addEventListener('click', function (e) {
+    app.style.visibility = "hidden";
+  }, false)
+</script>
 
 
+```
 
+- `beforeunload`事件
 
+  - 为了让开发人员有可能在页面卸载前阻止这一操作
 
+    - 为了显示这个对话框, 必须将`event.returnValue`的值设置为要显示给用户的字符串(对`IE` `Fiefox`而言), 同时作为函数的值返回, 对`Safari`和`chrome`而言
 
+    ```javascript
+      window.addEventListener('beforeunload', function (e) {
+        let message = "hanzhuo";
+        e.returnValue = message;
+        return message
+      }, false)
+    ```
 
+- `DOMContentLoaded`事件
 
+  - `load`事件会在页面中的一切都加载完毕时触发
+  - 该事件在形成完整的DOM树之后就会触发, 不理会图像, JavaScript文件, CSS文件或其他资源是否已经下载完毕
+  - 可以为`document`或`window`添加相应的事件处理程序, 这个事件会冒泡到`window`, 但它的目标实际上是`document`
 
+  ```javascript
+  document.addEventListener('DOMContentLoaded', function(e){
+      alert('content loaded');
+  },false)
+  ```
 
+  - 对于不支持`DOMContentLoaded`的浏览器, 建议在页面加载期间设置一个0毫秒的超时调用
 
+  ```javascript
+  setTimeout(function(){
+      //添加事件处理程序
+  }, 0)
+  为了确保这个方法有效, 必须将其作为页面中的第一个超时调用
+  ```
 
+- `pageshow` 和`pagehide`事件
 
+  - 在用户使用浏览器的后退和前进按钮时加快页面的转换速度
+  - 缓存中不仅保存着页面数据, 还保存了DOM和JavaScript的状态
+  - 将整个页面都保存在了内存
+  - 如果页面位于`bfcache`中, 再次打开该页面就不会触发`load`事件
 
+  - `pageshow`
 
+    - 在页面显示时触发, 无论该页面是否来自`bfcache`
+    - 在重新加载的页面中, `pageshow`会在`load`事件触发后触发
+    - 对于`bfcache`中的页面, `pageshow`会在页面状态完全恢复的那一刻触发
+    - 这个事件的目标是`document`, 但是必须将处理程序添加到`window`
 
+    - 可以在每次点击浏览器的返回按钮时刷新页面
 
+- `hashchange`事件
+
+  - 添加给`window`对象
+  - URL参数列表只要变化就会调用
+  - `event`包含两个属性: `oldURL` `newURL`, 保存着参数列表变化前后完整的URL
+
+  ```javascript
+  window.addEventListener('hashchange', function (e) {
+    console.log(e.oldURL, e.newURL)
+  }, false)
+  ```
+
+  ![1543224071107](C:\Users\hanzhuo\AppData\Local\Temp\1543224071107.png)
+
+###### 触摸与手势事件
+
+- 触摸事件
+
+  - `touchstart`: 手指触摸屏幕时触发, 即使已经有一个手指放在了屏幕上也会触发
+  - `touchmove`: 当手指在屏幕上滑动时连续触发, 在这个事件发生期间, 调用`preventDefault()`可以阻止滚动
+  - `touchend`: 当手指从屏幕上移开时触发
+  - `touchcancel`: 当系统停止跟踪触摸时触发,此事件的确切触发时间, 文档中没有明确说明
+  - 以上事件都会冒泡, 也都可以取消
+  - 每隔事件的event事件都提供了在鼠标事件中常见的属性
+
+  - 触摸事件还包含三个用于跟踪触摸的属性
+    - `touches`: 表示当前跟踪的触摸操作的`Touch`对象的数组
+    - `targetTouches`: 特定于事件目标的`Touch`对象的数组
+    - `changeTouches`: 表示自上次触摸一来发生了什么改变的`Touch`对象的数组
+    - `Touch`对象包含下列属性
+      - `clientX`
+      - `clientY`
+      - `identifier`: 标识触摸的唯一ID
+      - `pageX`
+      - `pageY`
+      - `screenX`
+      - `screenY`
+      - `target`: 触摸的DOM节点目标
+
+- 手势事件
+
+  - `gesturestart`: 当一个手指已经按在屏幕上而另一个手指又触摸屏幕时触发
+  - `gesturechange`: 当触摸屏幕的任何一个手指的位置发生变化时触发
+  - `gestureend`: 当任何一个手指从屏幕上面移开时触发
+  - 只有两个手指都触摸到事件的接受容器时才会触发
+  - 当一个手指放在屏幕上时, 会触发`touchstart`事件, 如果另一个手指又放到了屏幕上, 先触发`gesturestart`, 随后触发`touchstart`事件
+  - 一个或连个手指在屏幕上滑动, 会触发`gesturechange`, 知道有个手指离开, 先触发`gestureend`, 然后是`touchend`
+
+  - 包含两个额外的属性: `rotation` `scale`
+    - `rotation`表示手指变化引起的旋转角度, 负值表示逆时针旋转, 正值表示顺时针旋转(该值从0开始)
+    - `scale`表示两个手指间距离的变化情况(向内收缩会缩短距离), 从1开始, 并随距离拉大而增长, 随距离缩短而减小
+
+### 表单脚本
+
+------
+
+###### 表单的基础知识
+
+- `acceptCharset`: 服务器能够处理的字符集,等价于HTML中的`accept-charset`特性
+- `action`: 接收请求的url
+- `elements`: 表单中所有控件的集合
+- `enctype`: 请求的编码类型, 等价于HTML中的`enctype`特性
+- `length`: 表单中控件的数量
+- `method` : 要发送的http请求类型, 通常是`get`或`post`
+- `name`:表单的名称
+- `reset()`: 重置
+- `submit()`: 提交表单
+- `target`: 用于发送请求和接收响应的窗口名称, 等价于HTML的`target`特性
+- 通过`document.forms`可以取得页面中所有的表单, 可以通过数值索引或`name`值来取得特定的表单
+
+```javascript
+var firstForm = document.forms[0];
+var myForm = document.forms['form2'];
+```
+
+###### 选择文本
+
+- 调用`select()`方法时, 除Opera, 都会讲焦点设置到文本框中, 并选中预先设置好的默认值
+
+```
+var textbox = document.forms[0].elements['textbox1'];
+textbox.select();
+```
+
+- 选择事件(select)
+
+  - 在选择了文本框中的文本时, 会触发`select`事件
+  - IE9+, Opera, Firefox, Chrome和Safari中, 只有用户选择了文本(而且要释放鼠标), 才会触发`select`事件
+  - IE8之前, 只要选择了一个字母(不必释放鼠标), 就会触发select事件
+  - 在调用`select()`方法时也会触发`select`事件
+
+- 取得选择的文本
+
+  - `selectionStart` `selectEnd`
+    - 保存的是数字
+    - 表示所选文本的范围
+    - ie8不支持, 提供了另一种方案
+
+  ```
+  function getSelectedText(textbox){
+      return textbox.value.substring(textbox.selectionStart, textbox.selectionEnd);
+  }
+  ```
+
+  - IE8之前有一个`document.selection`对象, 保存着用户在整个文档范围内选择的文本信息, 在与`select`事件一起使用的时候, 可以假定是用户选择了文本框中的文本, 因而触发了该事件.
+
+  ```javascript
+  function getSelectedText(textbox){
+      if(typeof textbox.selectionStart === 'number'){
+          return textbox.value.substring(textbox.selectionStart, textbox.selectionEnd);
+      }else if(document.selection){
+          return document.selection.createRange().text;
+      }
+  }
+  ```
+
+- 选择部分文本
+
+  - `setSelectionRange()`
+    - 接收两个参数: 选择的第一个字符和最后一个字符的索引
+
+  ```javascript
+  textbox.value = "hello world!"
+  textbox.setSelectionRange(0, textbox.value.length); //"hello world!"
+  //选择前3个字符
+  textbox.setSelectionRange(0, 3);  "hel"
+  ```
+
+- `pattern`
+
+  ```
+  <input type= 'text' pattern='\d+' name = 'count'>
+  ```
+
+- 检测有效性
+
+  - `checkValidity()`
+
+    - 返回`true` or `false`
+    - 必填字段中无值即无效, 与`pattern`属性不匹配也无效
+
+    ```javascript
+    if(document.forms[0].elements[0].checkValidity()){
+        //字段有效
+    }
+    // 检测整个表单是否有效
+    if(document.forms[0].checkValidity()){
+        //字段有效
+    }
+    ```
+
+    ![1543308301207](C:\Users\hanzhuo\AppData\Local\Temp\1543308301207.png)
+
+- 禁用验证
+
+  ```html
+  <form method='post' action='signup.php' novalidate>
+  
+  </form>
+  或者
+  document.forms[0].noValidate = true;
+  ```
+
+  - 有多个提交按钮, 为了指定点击某个按钮不必验证表单, 可以使用`formnovalidate`
+
+  ```html
+  <form method='post' action='signup.php'>
+  <input type='submit' valie='a'>
+  <input type='submit' formnovalidate valie='b'>
+  </form>
+  ```
+
+###### 选择框脚本
+
+- `add(newOption, relOption)`: 向空间中插入新<option>元素, 其位置在相关项(relOption)之前
 
 
 
