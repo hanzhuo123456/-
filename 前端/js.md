@@ -3111,49 +3111,524 @@ textbox.select();
 ###### 选择框脚本
 
 - `add(newOption, relOption)`: 向空间中插入新<option>元素, 其位置在相关项(relOption)之前
+- `multiple`: 布尔值, 表示是否允许多项选择, 同HTML
+- `options`: 控件中所有<option>元素的`HTMLCollection`
+- `remove(index)`: 移除给定位置的选项
+- `selectedIndex`: 基于0的选中项的索引, 如果没有选中项, 则值为-1, 多余支持多选的控件 , 值保存选中项中第一项的索引
+- `size`: 选择框的行数, 同HTML
+- 如果没有选中项的值, 则选择框value属性保存空字符串
+- 如果有一个选中项, value值为HTML的value值
+- 如果有一个选中项, 但HTML未指定value, 则value为该项的文本
+- 如果有多个选中项, value只取第一个选中项的值
+
+- 获取选中项的值
+
+```javascript
+    <select name="sel" multiple style="width:200px;">
+      <option value="1">1</option>
+      <option value="2">2</option>
+    </select>
+let newOption = document.createElement('option')
+newOption.value = 3
+newOption.innerText = 3
+
+form.elements['sel'].add(newOption, form.elements['sel'].options[1])
+
+select.addEventListener('click', getOptionValue, false)
+function getOptionValue() {
+  selectArr = [];
+  optionsArr = select.options;
+  for(let i = 0; i < optionsArr.length; i++){
+    if(optionsArr[i].selected){
+      selectArr.push(optionsArr[i].value)
+    }
+  }
+  console.log(selectArr)
+}
+```
+
+- 每个<option>元素都有一个HTMLOptionElement对象, 属性如下:
+
+  - `index` : 当前选项在`options`集合中的索引
+  - `label`: 当前选项的标签, 同HTML
+  - `selected`: 布尔值, 表示当前选项是否被选中.设置为`true`可以选中当前选项
+  - `text`: 选项的文本
+  - `value`: 选项的值, 同HTML
+  - 常规的DOM访问这些信息效率低, 这些属性时为了方便数据的访问
+  - IE8中未指定value特性, 会返回空字符串, 而其他浏览器会返回与`text`特性相同的值
+
+- 选择选项
+
+  - `selectedIndex`
+
+  ```javascript
+  var selectedOption = selectbox.options[selectbox.selectedIndex];
+  ```
+
+- 移动和重排选项
+
+  - `appendChild()`
+    - 该方法传入一个文档中已有的元素, 就会先从该元素的父节点中移除它, 再把它添加到指定位置
+
+  ```javascript
+  var selectbox1 = document.getElementById('selLocations1');
+  var selectbox2 = document.getElementById('selLocations2');
+  
+  selectbox2.appendChild(selectbox1.options[0]);
+  ```
+
+  - `insertBefore()`
+    - 重排
+
+  ```
+  var optionToMove = selectbox.options[1];
+  selectbox.insertBefore(optionToMove, selectbox.options[optionToMove.index - 1])
+  ```
+
+###### 表单序列化
+
+- 对表单字段的名称和值进行URL编码, 使用&分隔
+- 不发送禁用的表单字段
+- 只发送勾选的复选框和单选按钮
+- 不发送`type`为`reset`和`button`的按钮
+- 多选选择框中的每个选中的值单独一个条目
+- 在单击提交按钮提交表单的情况下, 也会发送提交按钮; 否则, 不发送, 也包括`type`为`image`的<input>元素
+- `<select>`元素的值, 就是选中的<option>元素的`value`, 如果<option>没有`value`, 则是<option>
 
 
 
+###### 富文本编辑
+
+- 在页面中嵌入一个包含空HTML页面的`iframe`
+- 设置`designMode`属性, 这个空白的页面就可以被编辑
+- `designMode`
+  - `off`默认值
+  - `on`: 整个文档都可以编辑
+- 只有在页面完全加载完成之后才能设置`on`属性
+
+```javascript
+
+<div id="app">
+  <iframe src="" name="richedit"  style="width:500px;height: 500px;border:1px solid" frameborder="0"></iframe>
+</div>
+<script>
+  window.onload = function (e) {
+    frames['richedit'].document.designMode = 'on';
+  }
+</script>
+```
+
+- 使用`contenteditable`属性
+  - 可以应用给页面中的任何元素
+  - 不需要`iframe`, 空白页和`JavaScript`
+
+```html
+<div id="app" contenteditable="true"></div>
+```
+
+###### 操作富文本
+
+- 《JS高程》458页
+
+- 富文本选区--《JS高程》460页
 
 
 
+### 使用Canvas绘图
+
+------
+
+##### 基本用法
+
+- 获取`canvas`
+
+```javascript
+<canvas id="drawing" width="300px" height="300px">do something</canvas>
+<script>
+let canvas = document.getElementById('drawing');
+/** 检测浏览器是否支持 **/
+if(canvas.getContext){
+  let context = canvas.getContext('2d')
+}
+</script>
+```
+
+- `toDataURL()`
+
+  - 可以到处在<canvas>上绘制的图像
+    - 接收图像的MIME类型格式参数
+
+  ```javascript
+  <script>
+  let canvas = document.getElementById('drawing');
+  /** 检测浏览器是否支持 **/
+  if(canvas.getContext){
+    var imageURL = canvas.toDataURL('image/png');
+    //显示图像
+    var image = document.createElement('image');
+    image.src = imageURL;
+    document.body.appendChild(image);
+  }
+  </script>
+  ```
+
+##### 2D上下文
+
+- 原点是坐标左上角, x轴向右为正轴, y轴向下为正轴
+
+###### 填充和描边
+
+- 大多数上下文操作都会细分为填充和描边两个操作
+
+- `fillStyle` `strokeStyle`
+
+  - 值可以是字符串, 渐变对象或模式对象
+  - 默认值都是"#000000"
+  - 可以使用css中指定颜色值的任何格式
+
+  ```javascript
+  if(canvas.getContext){
+    let context = canvas.getContext('2d');
+    context.strokeStyle = 'red';
+    context.fillStyle = "#0000ff";
+  }
+  
+  所有涉及描边和填充的操作都将使用这两个样式, 直至重新设置这两个值.
+  ```
+
+###### 绘制矩形
+
+- 与矩形有关的方法
+
+  - `fillRect()`
+
+    - 该方法在画布上绘制的矩形会填充指定的颜色.填充的颜色通过`fillStyle`指定
+
+    - 四个参数, 矩形的x坐标, y坐标, 矩形的宽, 高
+
+      ```
+      if(canvas.getContext){
+        let context = canvas.getContext('2d');
+        context.strokeStyle = 'red';
+        context.fillStyle = "#0000ff";
+        context.fillRect(10, 10, 50, 50);
+      
+        /** 半透明的蓝色矩形 **/
+        context.fillStyle = 'rgba(0,0,255,0.5)';
+        context.fillRect(60,10,50,50);
+      }
+      ```
 
 
 
+      ![1543399388098](C:\Users\hanzhuo\AppData\Local\Temp\1543399388098.png)
+
+  - `strokeRect()`
+
+    - 会使用指定的颜色描边
+    - 描边颜色通过`strokeStyle`属性指定
+    - 参数同`fillRect()`
+    - 线条宽度由`lineWidth`控制(在`strokeRect()`之前), 值是任意整数
+    - `lineCap`可以控制线条末端是平头圆头还是方头
+      - `butt`
+      - `round`
+      - `square`
+    - `lineJoin`可以控制线条香蕉方式
+      - 圆交---`round`
+      - 斜交---`bevel`
+      - 斜接---`miter`(默认)
+    - 设置线条宽度和矩形宽度一致时会得到一个实心的矩形
+
+    ```javascript
+      context.strokeStyle = 'red';
+      context.strokeRect(10, 10, 50, 50);
+    
+      /** 半透明的蓝色矩形 **/
+      context.strokeStyle = 'rgba(0,0,255,0.5)';
+      context.strokeRect(60,10,50,50);
+    ```
+
+    ![1543399514828](C:\Users\hanzhuo\AppData\Local\Temp\1543399514828.png)
+
+  - `clearRect()`
+
+    - 用于清除画布上的矩形区域
+    - 参数同上
+
+    ```javascript
+     let context = canvas.getContext('2d');
+      // context.fillStyle = "red";
+      // context.fillRect(10, 10, 160, 160);
+    
+      context.fillStyle = "blue";
+      context.fillRect(50, 50, 1500, 1500);
+      canvas.addEventListener('mousemove', function (e) {
+        if(e.ctrlKey){
+          let left = e.offsetX;
+          let top = e.offsetY;
+          context.clearRect(left, top, 15, 15);
+        }
+      },false)
+    ```
+
+###### 绘制路径
+
+- 要绘制路径, 必须调用`beginPath()`方法, 表示要开始绘制新路径
+
+- 调用下列方法绘制路径
+
+  - `arc(x, y, radius, startAngle, endAngle, counterclockwise)`
+    - x, y 为圆心
+    - 半径为`radius`
+    - 起始角度为`startAngle`(弧度表示)
+    - 结束角度`endAngle`
+    - `counterclockwise`为false表示逆时针计算
+  - `arcTo (x1, y1, x2, y2, radius)`
+    - 从上一个点开始绘制一条弧线
+    - 到`(x2, y2)`为止
+    - 以给定半径`radius`穿过`(x1, y1)`
+  - `bezierCurveTo(c1x, c1y, c2x, c2y, x, y)`
+    - 从上一个点开始绘制曲线
+    - 到`(x, y)`为止
+    - 以`(c1x, c1y), (c2x, c2y)`为控制点
+  - `lineTo(x, y)`
+    - 从上一个点开始绘制直线
+    - 到`(x, y)`为止
+  - `moveTo(x, y)`
+    - 将绘图游标移动到`(x, y)`, 不画线
+
+  - `quadraticCurveTo(cx, cy, x, y)`
+
+    - 从上一点开始绘制二次曲线
+    - 到`(x, y)`为止
+    - 以`(cx , cy)`作为控制点
+
+  - `rect(x, y, width, height)`
+
+    - 从点`(x, y)`开始绘制矩形
+
+    - 宽高为`width, height`
+
+    - 绘制的是矩形路径, 而不是`strokeRect()`和`fillRect()`所绘制的独立的形状
+
+  - 想绘制一条连接到路径起点的线条, 使用`closePath()`
+  - 路径已经完成, 想用`fillStyle`填充, 可以调用`fill()`方法
+  - 可以使用`stroke()`对路径描边, 使用的是`strokeStyle`
+  - `clip()`可以在路径上创建一个剪切区域
+
+  ```javascript
+    let context = canvas.getContext('2d');
+    context.beginPath();
+    context.strokeStyle = "blue";
+    context.arc(250, 250, 100, 0, 2 * Math.PI, false);
+    /** 绘制外圆, 需要移动指针, 不然内外圆会有一小段会连接起来 **/
+    context.moveTo(355, 250);
+    context.arc(250, 250, 105, 0, 2 * Math.PI, false);
+  
+    /** 绘制时针 **/
+    context.moveTo(250, 250);
+    context.lineTo(180, 250);
+  
+    /** 绘制分针 **/
+    context.moveTo(250, 250);
+    context.lineTo(250, 160);
+  
+    /** 绘制文本 **/
+  
+    context.stroke();
+  ```
+
+  ![1543459272911](C:\Users\hanzhuo\AppData\Local\Temp\1543459272911.png)
+
+###### 绘制文本
+
+- `fillText()` `strokeText()`
+
+  - 接收4个参数
+
+    - 要绘制的文本字符串
+    - x坐标
+    - y坐标
+    - 可选的最大像素宽度
+
+  - 以下列3个属性为基础
+
+    - `font`: 表示文本样式, 大小和字体--->`10px Arial`
+    - `textAlign`: 文本对其样式
+      - `start` `end`(推荐使用)
+      - `left` `right`(不推荐使用)
+      - `center`
+    - `textBaseline`: 文本基线
+      - `top`
+      - `hanging`
+      - `middle`
+      - `alphabetic`
+      - `ideographic`
+      - `bottom`
+
+    ```javascript
+      context.textBaseline = 'top';
+      context.textAlign = "center";
+      /** 绘制文本 **/
+      let startAn = Math.PI / 2;
+      let stepAn = Math.PI / 6;
+      for(let i = 0; i < 12; i ++ ){
+        if(i === 0){
+          context.fillText('12', 250, 250 - r, 20)
+          continue;
+        }
+        context.fillText(i,  250 + 100 * Math.cos(startAn - stepAn), 250 - 100 * Math.sin(startAn - stepAn), 20)
+        stepAn += Math.PI / 6;
+      }
+      context.stroke();
+    ```
+
+    ![1543461673625](C:\Users\hanzhuo\AppData\Local\Temp\1543461673625.png)
+
+###### 变换
+
+- `rotate(angle)`
+  - 围绕原点旋转图像angle弧度
+
+- `scale(calseX, scaleY)`
+
+  - 缩放图像, 在x方向乘以`scaleX`, y方向乘以`scaleY`
+  - `scaleX``scaleY`默认值为1.0
+
+- `translate(x, y)`
+
+  - 将坐标原点移动到`(x,y)`
+
+  - 坐标`(0, 0)`会变成`(x, y)`表示的点
+
+- `transform(m1_1, m1_2, m2_1, m2_2, dx, dy)`
+
+- `setTransform(m1_1, m1_2, m2_1, m2_2, dx, dy)`
+  - 将矩阵重置为默认状态
+  - 再调用`transform()`
+
+- 虽然没有办法把上下文中的一切都重置回默认值, 但有两个方法可以跟踪上下文的状态变化
+  - 如果将来还要返回某组属性与变换的组合, 可以调用`save()`方法, 所有设置都会进入一个栈结构,得以妥善保管
+  - 然后可以对上下文进行其他修改
+  - 等想要回到之前保存的设置时, 可以调用`restore()`方法, 在保存设置的栈结构中向前返回一级, 恢复之前的状态
+  - 连续调用`save()`可以把更多设置保存到栈结构中, 连续`restore()`可一级一级返回.
+
+###### 绘制图像
+
+- `drawImage()`
+
+  - 传入HTML<img>元素, 以及绘制图像的起点的x, y坐标
+
+  ```
+    let image = document.getElementById('image')
+    context.drawImage(image, 10, 10);
+    context.stroke();
+  ```
+
+  - 改变绘制后图像的大小, 可以多传入两个参数, 表示目标宽度和目标高度, 不会影响上下文的变换矩阵
+
+  ```javascript
+   context.drawImage(image, 10, 10, 220, 130);
+  ```
+
+  - 可以选择把图像中的某个区域绘制到上下文中, 传入9个参数
+    - 要绘制的图像
+    - 源图像的x坐标
+    - 源图像的y坐标
+    - 源图像的宽度
+    - 源图像的高度
+    - 目标图像的x坐标
+    - 目标图像的y坐标
+    - 目标图像的宽度
+    - 目标图像的高度
+
+  ```javascript
+   context.drawImage(image, 110, 110, 200, 300, 10, 10, 200, 300);
+   // 从原始图像的(110,110)开始, 将200X300大小的部分图片绘制到起点为(10, 10)大小为200X300的canvas中
+  ```
+
+  - 还可以传入<canvas>元素作为第一个参数, 可以把另一个画布的内容绘制到当前画布上
+  - 操作结果可以通过`toDataURL()`方法获得, 但是图像不能来自其他域, 不然会报错
+    - 加入位于`www.example.com`上的页面绘制的图像来自于`www.wrox.com`, 就会报错
+
+###### 阴影
+
+- `shadowColor`: 用css颜色格式表示的阴影颜色, 默认为黑色
+- `shadowOffsetX`: 形状或路径x轴方向的阴影偏移量, 默认为0
+- `shadowOffsetY`: 形状或路径y轴方向的阴影偏移量, 默认为0
+- `shadowBlue`: 模糊的像素数, 默认0, 即不模糊
+- 这些属性都可以通过`context`对象来修改
+
+###### 渐变
+
+- `createLinearGradient()`
+  - 起点的x坐标
+  - 起点的y坐标
+  - 终点的x坐标
+  - 终点的y坐标
+  - 创建一个指定大小的渐变, 并返回`CanvasGradient`对象的实例
+- 创建了渐变对象之后, 使用`addColorStop()`方法来指定色标
+  - 两个参数: 色标位置和CSS颜色值
+  - 色标位置是一个0(开始的颜色)到1(结束的颜色)之间的数字
+  - 为了让渐变覆盖整个矩形, 而不是仅应用到矩形的一部分, 矩形和渐变对象坐标必须匹配才行
+  - 如果没有把矩形绘制到恰当的位置, 可能只显示部分渐变效果
+
+```javascript
+  /** 渐变 **/
+  let gradient = context.createLinearGradient(10, 10, 100, 100);
+  gradient.addColorStop(0, 'red');
+  gradient.addColorStop(0.5, 'yellow');
+  gradient.addColorStop(1, 'blue');
+
+  context.fillStyle = gradient;
+  context.fillRect(10, 10, 100, 100);
+  context.stroke();
+```
+
+![1543476492560](C:\Users\hanzhuo\AppData\Local\Temp\1543476492560.png)
 
 
 
+- 径向渐变
+
+  - `createRadialGradient()`: 6个参数
+
+    - 前三个参数指定起点圆的圆心和半径
+    - 后三个参数指定终点圆的圆心和半径
+    - 可以把径向渐变想象成一个长圆筒
+    - 6个参数定义的是这个桶的圆形开口的位置
+    - 如果把一个圆形开口定义得比另一个小些, 那这个圆桶就变成了圆锥体
+    - 通过移动每个圆形开口的位置, 就可达到像旋转这个圆锥体一样的效果
+
+    - 如果想从某个形状的中心点开始创建一个向外扩散的径向渐变效果, 就要将两个圆定义为同心圆
+
+  ```javascript
+      let radialGradient = context.createRadialGradient(100, 100, 30, 100, 50, 20)
+    radialGradient.addColorStop(0, 'red');
+    radialGradient.addColorStop(0.5, 'yellow');
+    radialGradient.addColorStop(1, 'blue');
+  
+    context.fillStyle = radialGradient;
+    context.fillRect(40, 40, 140, 140);
+  ```
+
+
+![1543477598310](C:\Users\hanzhuo\AppData\Local\Temp\1543477598310.png)
 
 
 
+###### 模式
 
+- 模式就是重复的图像, 用来填充或描边图形
+- 创建新模式-->`createPattern()`: 两个参数
+  - 一个HTML<img> 元素
+  - 表示如何重复图像的字符串
+    - `repeat`
+    - `repeat-x`
+    - `repeat-y`
+    - `no-repeat`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+![1543477802177](C:\Users\hanzhuo\AppData\Local\Temp\1543477802177.png)
 
 
 
